@@ -21,13 +21,21 @@ import com.tencent.kuikly.core.base.BorderStyle
 import com.tencent.kuikly.core.base.BoxShadow
 import com.tencent.kuikly.core.base.Color
 import com.tencent.kuikly.core.base.ColorStop
+import com.tencent.kuikly.core.base.ComposeAttr
+import com.tencent.kuikly.core.base.ComposeEvent
+import com.tencent.kuikly.core.base.ComposeView
 import com.tencent.kuikly.core.base.Direction
 import com.tencent.kuikly.core.base.Rotate
+import com.tencent.kuikly.core.base.Translate
+import com.tencent.kuikly.core.base.ViewBuilder
 import com.tencent.kuikly.core.base.ViewContainer
+import com.tencent.kuikly.core.base.event.PanGestureParams
+import com.tencent.kuikly.core.reactive.handler.observable
 import com.tencent.kuikly.core.views.Input
 import com.tencent.kuikly.core.views.Scroller
 import com.tencent.kuikly.core.views.Text
 import com.tencent.kuikly.core.views.View
+import kotlin.math.abs
 
 /**
  * Visual theme for Table / HTable.
@@ -792,6 +800,7 @@ fun ViewContainer<*, *>.FrozenColumnTable(
     rowCount: Int,
     rowHeight: Float = 48f,
     frozenWidth: Float = 80f,
+    scrollWidth: Float = 600f,
     theme: TableTheme = TableTheme.Default,
     frozenHeaderContent: TableCellView.() -> Unit,
     frozenRowContent: (Int) -> (TableCellView.() -> Unit),
@@ -828,7 +837,7 @@ fun ViewContainer<*, *>.FrozenColumnTable(
         }
 
         // Horizontally scrollable columns
-        HTable {
+        HTable(tableWidth = scrollWidth) {
             attr { flex(1f) }
             TableRow {
                 attr {
@@ -848,4 +857,458 @@ fun ViewContainer<*, *>.FrozenColumnTable(
             }
         }
     }
+}
+
+// ---------------------------------------------------------------------------
+// SwipeableTableRow - swipe-to-reveal actions (Vant SwipeCell / iOS Mail style)
+// ---------------------------------------------------------------------------
+
+/**
+ * A single action button shown when a row is swiped.
+ *
+ * @param label Text label (may include an emoji/icon prefix).
+ * @param color Background color of the action button.
+ * @param textColor Label color. Defaults to white.
+ * @param icon Optional emoji/icon prefix displayed above the label.
+ * @param width Button width in dp.
+ */
+data class SwipeAction(
+    val label: String,
+    val color: Color,
+    val textColor: Color = Color(0xFFFFFFFFL),
+    val icon: String = "",
+    val width: Float = 72f,
+)
+
+class SwipeableTableRowAttr : ComposeAttr() {
+    internal var leftActions by observable(emptyList<SwipeAction>())
+    internal var rightActions by observable(emptyList<SwipeAction>())
+    internal var rowHeight by observable(56f)
+    internal var snapThreshold by observable(0.4f)
+    internal var theme by observable(TableTheme.Default)
+    internal var contentBuilder: (ViewContainer<*, *>.() -> Unit)? = null
+
+    fun leftActions(vararg a: SwipeAction) { leftActions = a.toList() }
+    fun rightActions(vararg a: SwipeAction) { rightActions = a.toList() }
+    fun rowHeight(h: Float) { rowHeight = h }
+    fun snapThreshold(t: Float) { snapThreshold = t }
+    fun theme(t: TableTheme) { theme = t }
+    fun content(builder: ViewContainer<*, *>.() -> Unit) { contentBuilder = builder }
+}
+
+class SwipeableTableRowEvent : ComposeEvent() {
+    var onAction: ((side: String, index: Int) -> Unit)? = null
+    fun onAction(block: (side: String, index: Int) -> Unit) { onAction = block }
+}
+
+class SwipeableTableRowView : ComposeView<SwipeableTableRowAttr, SwipeableTableRowEvent>() {
+
+    // Current content translation: negative = swiped left (right actions visible),
+    // positive = swiped right (left actions visible).
+    private var offsetX by observable(0f)
+
+    // Gesture bookkeeping - not reactive, updated synchronously during pan.
+    private var panStartPageX = 0f
+    private var panStartOffset = 0f
+
+    override fun createAttr(): SwipeableTableRowAttr = SwipeableTableRowAttr()
+    override fun createEvent(): SwipeableTableRowEvent = SwipeableTableRowEvent()
+
+    override fun body(): ViewBuilder {
+        val ctx = this
+        return {
+            // TableRow wrapper - keeps this ComposeView transparent (no attrs on `this`)
+            // so the flat-layer mechanism lets it integrate seamlessly into a Table.
+            TableRow {
+                attr {
+                    rowHeight(ctx.attr.rowHeight)
+                    backgroundColor(ctx.attr.theme.rowBackground)
+                }
+
+                val leftActions = ctx.attr.leftActions
+                val rightActions = ctx.attr.rightActions
+                val leftWidth = leftActions.sumOf { it.width.toDouble() }.toFloat()
+                val rightWidth = rightActions.sumOf { it.width.toDouble() }.toFloat()
+
+                // Clip container fills the row and hides action buttons that are off-screen.
+                View {
+                    attr {
+                        flex(1f)
+                        overflow(true)
+                    }
+
+                    // Left action buttons - sit at the left edge, revealed when content shifts right.
+                    if (leftActions.isNotEmpty()) {
+                        View {
+                            attr {
+                                absolutePosition(top = 0f, left = 0f, bottom = 0f)
+                                width(leftWidth)
+                                flexDirectionRow()
+                            }
+                            leftActions.forEachIndexed { index, action ->
+                                ctx.actionButton(this, action, "left", index)
+                            }
+                        }
+                    }
+
+                    // Right action buttons - sit at the right edge, revealed when content shifts left.
+                    if (rightActions.isNotEmpty()) {
+                        View {
+                            attr {
+                                absolutePosition(top = 0f, right = 0f, bottom = 0f)
+                                width(rightWidth)
+                                flexDirectionRow()
+                            }
+                            rightActions.forEachIndexed { index, action ->
+                                ctx.actionButton(this, action, "right", index)
+                            }
+                        }
+                    }
+
+                    // Content layer - slides over the action buttons via offsetX translation.
+                    View {
+                        attr {
+                            absolutePositionAllZero()
+                            backgroundColor(ctx.attr.theme.rowBackground)
+                            transform(Translate(0f, 0f, ctx.offsetX, 0f))
+                            animate(Animation.easeOut(0.25f), ctx.offsetX)
+                        }
+                        event {
+                            pan { params -> ctx.handlePan(params, leftWidth, rightWidth) }
+                            click { if (ctx.offsetX != 0f) ctx.snapClose() }
+                        }
+                        ctx.attr.contentBuilder?.invoke(this)
+                    }
+                }
+            }
+        }
+    }
+
+    // Renders a single action button into [container].
+    private fun actionButton(
+        container: ViewContainer<*, *>,
+        action: SwipeAction,
+        side: String,
+        index: Int,
+    ) {
+        val ctx = this
+        container.View {
+            attr {
+                width(action.width)
+                flex(1f)
+                allCenter()
+                flexDirectionColumn()
+                backgroundColor(action.color)
+                val shadowX = if (side == "left") 1f else -1f
+                boxShadow(BoxShadow(shadowX, 0f, 4f, Color(red255 = 0, green255 = 0, blue255 = 0, alpha01 = 0.15f)))
+            }
+            event {
+                click {
+                    ctx.event.onAction?.invoke(side, index)
+                    ctx.snapClose()
+                }
+            }
+            if (action.icon.isNotEmpty()) {
+                Text {
+                    attr {
+                        fontSize(18f)
+                        text(action.icon)
+                        marginBottom(2f)
+                    }
+                }
+            }
+            Text {
+                attr {
+                    fontSize(12f)
+                    color(action.textColor)
+                    fontWeightMedium()
+                    text(action.label)
+                }
+            }
+        }
+    }
+
+    private fun handlePan(params: PanGestureParams, leftWidth: Float, rightWidth: Float) {
+        when (params.state) {
+            "start" -> {
+                panStartPageX = params.pageX
+                panStartOffset = offsetX
+            }
+            "move" -> {
+                val delta = params.pageX - panStartPageX
+                val raw = panStartOffset + delta
+                val maxRight = if (attr.leftActions.isNotEmpty()) leftWidth * 1.1f else 0f
+                val maxLeft = if (attr.rightActions.isNotEmpty()) -rightWidth * 1.1f else 0f
+                offsetX = raw.coerceIn(maxLeft, maxRight)
+            }
+            "end" -> {
+                val threshold = attr.snapThreshold
+                when {
+                    offsetX < 0f && abs(offsetX) >= rightWidth * threshold -> snapOpen(-rightWidth)
+                    offsetX > 0f && abs(offsetX) >= leftWidth * threshold -> snapOpen(leftWidth)
+                    else -> snapClose()
+                }
+            }
+        }
+    }
+
+    private fun snapOpen(target: Float) { offsetX = target }
+    private fun snapClose() { offsetX = 0f }
+}
+
+/**
+ * A table row that reveals swipeable action buttons when the user pans horizontally -
+ * matching the Vant SwipeCell, iOS Mail, and Ant Design Mobile SwipeAction pattern.
+ */
+fun ViewContainer<*, *>.SwipeableTableRow(init: SwipeableTableRowView.() -> Unit) {
+    addChild(SwipeableTableRowView(), init)
+}
+
+// =============================================================================
+// TreeTable - hierarchical table with expand/collapse (Element Plus / Ant Design)
+// =============================================================================
+
+/**
+ * A single node in the tree table.
+ *
+ * @param id       Unique string identifier used to track expand state.
+ * @param cells    Cell text values, one per column.
+ * @param children Nested child rows; empty list = leaf node.
+ * @param tag      Optional caller-supplied data object for event callbacks.
+ */
+data class TreeTableNode(
+    val id: String,
+    val cells: List<String>,
+    val children: List<TreeTableNode> = emptyList(),
+    val tag: Any? = null,
+)
+
+/** A single column definition for [TreeTableView]. */
+data class TreeTableColumn(
+    val header: String,
+    val flex: Float = 1f,
+    val align: String = "left",  // "left", "center", "right"
+)
+
+class TreeTableAttr : ComposeAttr() {
+
+    internal var nodes by observable(emptyList<TreeTableNode>())
+    internal var columns by observable(emptyList<TreeTableColumn>())
+    internal var expandedIds by observable(emptySet<String>())
+    internal var defaultExpandAll by observable(false)
+    internal var rowHeight by observable(44f)
+    internal var indentWidth by observable(20f)
+    internal var showExpandIcon by observable(true)
+
+    // colors
+    internal var headerBackground by observable(Color(0xFFF5F5F5L))
+    internal var headerTextColor by observable(Color(0xFF333333L))
+    internal var rowBackground by observable(Color(0xFFFFFFFFL))
+    internal var rowAltBackground by observable(Color(0xFFFAFAFAL))
+    internal var rowTextColor by observable(Color(0xFF555555L))
+    internal var separatorColor by observable(Color(0xFFEEEEEEL))
+    internal var expandIconColor by observable(Color(0xFF1677FFL))
+    internal var headerFontSize by observable(13f)
+    internal var rowFontSize by observable(13f)
+
+    fun nodes(list: List<TreeTableNode>) { nodes = list }
+    fun nodes(vararg n: TreeTableNode) { nodes = n.toList() }
+    fun columns(list: List<TreeTableColumn>) { columns = list }
+    fun columns(vararg c: TreeTableColumn) { columns = c.toList() }
+    fun expandedIds(ids: Set<String>) { expandedIds = ids }
+    fun defaultExpandAll(b: Boolean) { defaultExpandAll = b }
+    fun rowHeight(h: Float) { rowHeight = h.coerceAtLeast(28f) }
+    fun indentWidth(w: Float) { indentWidth = w.coerceAtLeast(8f) }
+    fun showExpandIcon(show: Boolean) { showExpandIcon = show }
+    fun headerBackground(c: Color) { headerBackground = c }
+    fun rowBackground(c: Color) { rowBackground = c }
+    fun rowTextColor(c: Color) { rowTextColor = c }
+    fun separatorColor(c: Color) { separatorColor = c }
+    fun theme(t: TableTheme) {
+        headerBackground = t.headerBackground
+        headerTextColor = t.headerTextColor
+        rowBackground = t.rowBackground
+        separatorColor = t.separatorColor
+    }
+}
+
+class TreeTableEvent : ComposeEvent() {
+    var onExpandChange: ((nodeId: String, expanded: Boolean) -> Unit)? = null
+    var onRowClick: ((node: TreeTableNode, depth: Int) -> Unit)? = null
+}
+
+class TreeTableView : ComposeView<TreeTableAttr, TreeTableEvent>() {
+
+    // Mutable set of expanded IDs tracked as observable string (hash-join hack)
+    private var expandedSnapshot by observable("")
+
+    private val localExpanded = mutableSetOf<String>()
+
+    override fun createAttr(): TreeTableAttr = TreeTableAttr()
+    override fun createEvent(): TreeTableEvent = TreeTableEvent()
+
+    override fun didInit() {
+        super.didInit()
+        if (attr.defaultExpandAll) {
+            collectAllIds(attr.nodes).forEach { localExpanded.add(it) }
+        } else {
+            localExpanded.addAll(attr.expandedIds)
+        }
+        snapExpanded()
+    }
+
+    private fun snapExpanded() { expandedSnapshot = localExpanded.joinToString(",") }
+
+    private fun collectAllIds(nodes: List<TreeTableNode>): List<String> =
+        nodes.flatMap { listOf(it.id) + collectAllIds(it.children) }
+
+    private fun toggle(id: String) {
+        if (localExpanded.contains(id)) localExpanded.remove(id) else localExpanded.add(id)
+        snapExpanded()
+        event.onExpandChange?.invoke(id, localExpanded.contains(id))
+    }
+
+    override fun body(): ViewBuilder {
+        val ctx = this
+        return {
+            // Force re-render on expandedSnapshot change (reactive dependency)
+            @Suppress("UNUSED_VARIABLE")
+            val expandedKey = ctx.expandedSnapshot
+
+            View {
+                attr { flexDirectionColumn() }
+
+                // Header row
+                View {
+                    attr {
+                        flexDirectionRow()
+                        height(ctx.attr.rowHeight)
+                        backgroundColor(ctx.attr.headerBackground)
+                        alignItems(com.tencent.kuikly.core.layout.FlexAlign.CENTER)
+                    }
+                    ctx.attr.columns.forEach { col ->
+                        View {
+                            attr {
+                                flex(col.flex)
+                                height(ctx.attr.rowHeight)
+                                allCenter()
+                                paddingLeft(8f)
+                                paddingRight(8f)
+                            }
+                            Text {
+                                attr {
+                                    text(col.header)
+                                    fontSize(ctx.attr.headerFontSize)
+                                    fontWeightMedium()
+                                    color(ctx.attr.headerTextColor)
+                                }
+                            }
+                        }
+                    }
+                }
+                View { attr { height(0.5f); backgroundColor(ctx.attr.separatorColor) } }
+
+                // Flattened visible rows
+                ctx.renderNodes(this, ctx.attr.nodes, depth = 0, altBase = 0)
+            }
+        }
+    }
+
+    private fun renderNodes(
+        parent: ViewContainer<*, *>,
+        nodes: List<TreeTableNode>,
+        depth: Int,
+        altBase: Int,
+    ) {
+        val ctx = this
+        var rowIndex = altBase
+        nodes.forEach { node ->
+            val isExpanded = ctx.localExpanded.contains(node.id)
+            val hasChildren = node.children.isNotEmpty()
+            val finalDepth = depth
+            val finalIsExpanded = isExpanded
+            val finalNode = node
+
+            parent.View {
+                attr {
+                    flexDirectionColumn()
+                }
+
+                // Row itself
+                View {
+                    attr {
+                        flexDirectionRow()
+                        alignItems(com.tencent.kuikly.core.layout.FlexAlign.CENTER)
+                        height(ctx.attr.rowHeight)
+                        backgroundColor(if (rowIndex % 2 == 0) ctx.attr.rowBackground else ctx.attr.rowAltBackground)
+                    }
+                    event { click { ctx.event.onRowClick?.invoke(finalNode, finalDepth) } }
+
+                    // First cell with indent + expand icon
+                    View {
+                        attr {
+                            flex(ctx.attr.columns.firstOrNull()?.flex ?: 1f)
+                            flexDirectionRow()
+                            alignItems(com.tencent.kuikly.core.layout.FlexAlign.CENTER)
+                            paddingLeft(8f + finalDepth * ctx.attr.indentWidth)
+                            paddingRight(4f)
+                        }
+
+                        if (ctx.attr.showExpandIcon) {
+                            if (hasChildren) {
+                                Text {
+                                    attr {
+                                        text(if (finalIsExpanded) "▾" else "▸")
+                                        fontSize(12f)
+                                        color(ctx.attr.expandIconColor)
+                                        marginRight(6f)
+                                        animate(Animation.easeInOut(0.15f), finalIsExpanded)
+                                    }
+                                    event { click { ctx.toggle(finalNode.id) } }
+                                }
+                            } else {
+                                // leaf indent placeholder
+                                View { attr { width(18f) } }
+                            }
+                        }
+
+                        Text {
+                            attr {
+                                text(node.cells.getOrElse(0) { "" })
+                                fontSize(ctx.attr.rowFontSize)
+                                color(ctx.attr.rowTextColor)
+                                flex(1f)
+                            }
+                        }
+                    }
+
+                    // Remaining cells
+                    for (colIdx in 1 until ctx.attr.columns.size) {
+                        val col = ctx.attr.columns[colIdx]
+                        View {
+                            attr { flex(col.flex); allCenter(); paddingLeft(4f); paddingRight(4f) }
+                            Text {
+                                attr {
+                                    text(node.cells.getOrElse(colIdx) { "" })
+                                    fontSize(ctx.attr.rowFontSize)
+                                    color(ctx.attr.rowTextColor)
+                                }
+                            }
+                        }
+                    }
+                }
+                View { attr { height(0.5f); backgroundColor(ctx.attr.separatorColor) } }
+
+                // Children (only if expanded)
+                if (isExpanded && hasChildren) {
+                    ctx.renderNodes(this, node.children, depth + 1, rowIndex + 1)
+                }
+            }
+            rowIndex++
+        }
+    }
+}
+
+fun ViewContainer<*, *>.TreeTable(init: TreeTableView.() -> Unit) {
+    addChild(TreeTableView(), init)
 }
