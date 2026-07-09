@@ -19,13 +19,32 @@ import com.tencent.kuikly.core.base.Color
 import com.tencent.kuikly.core.base.ViewConst
 import com.tencent.kuikly.core.base.ViewContainer
 import com.tencent.kuikly.core.base.toInt
+import com.tencent.kuikly.core.layout.FlexDirection
 import com.tencent.kuikly.core.log.KLog
+import com.tencent.kuikly.core.views.Scroller
+import com.tencent.kuikly.core.views.View
 import com.tencent.kuikly.core.views.internal.GroupAttr
 import com.tencent.kuikly.core.views.internal.GroupEvent
 import com.tencent.kuikly.core.views.internal.GroupView
 
 fun ViewContainer<*, *>.Table(init: TableView.() -> Unit) {
     addChild(TableView(), init)
+}
+
+/**
+ * Bidirectional-scrolling table: horizontal panning via outer [Scroller],
+ * vertical scrolling via the native [TableView].
+ *
+ * [tableWidth] must exceed the viewport width for horizontal overflow to work.
+ */
+fun ViewContainer<*, *>.HTable(tableWidth: Float, init: TableView.() -> Unit) {
+    Scroller {
+        attr { flexDirection(FlexDirection.ROW) }
+        View {
+            attr { width(tableWidth) }
+            addChild(TableView(), init)
+        }
+    }
 }
 
 fun ViewContainer<*, *>.TableRow(init: TableRowView.() -> Unit) {
