@@ -40,6 +40,10 @@
   --text:#e2e8f0;
   --text-muted:#94a3b8;
 }
+[data-theme="dark"] .phone-screen{background:#1a1f2c}
+[data-theme="dark"] .phone-table th{background:#1e2d40;color:#e2e8f0;border-bottom-color:#374151}
+[data-theme="dark"] .phone-table td{color:#cbd5e1;border-bottom-color:#2d3748}
+[data-theme="dark"] .phone-table tr{background:#0f172a}
 html{scroll-behavior:smooth}
 body{font-family:'HarmonyOS Sans SC','HarmonyOS Sans','鸿蒙黑体','Microsoft YaHei UI','Microsoft YaHei','微软雅黑','JetBrains Mono',system-ui,-apple-system,sans-serif;background:var(--main-bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
 
@@ -337,6 +341,7 @@ details.code-toggle[open] summary::before{transform:rotate(90deg)}
   .phone-frame{display:none}
 }
 </style>
+<script>(function(){var s;try{s=localStorage.getItem('ktv-theme')}catch(e){}if(!s)s=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';if(s==='dark')document.documentElement.setAttribute('data-theme','dark')})()</script>
 </head>
 <body>
 <!-- TOP BAR -->
@@ -1047,19 +1052,38 @@ const THEMES = {
 };
 
 // ===================== PAGE THEME TOGGLE =====================
-let pageTheme = 'light';
+let pageTheme = (function(){
+  try{var s=localStorage.getItem('ktv-theme');if(s)return s;}catch(e){}
+  return window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+})();
+document.documentElement.setAttribute('data-theme', pageTheme==='dark'?'dark':'');
+
+window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change', function(e){
+  try{if(localStorage.getItem('ktv-theme'))return;}catch(ex){}
+  pageTheme = e.matches?'dark':'light';
+  document.documentElement.setAttribute('data-theme', pageTheme==='dark'?'dark':'');
+  renderAll();
+});
+
+function renderAll() {
+  renderBasicTable(); renderHTable(); renderRowCellTable();
+  renderPaginatedTable(); renderEmptyDemo(); renderSearchTable();
+  renderExpandableTable(); renderCheckboxTable(); renderSwipeRows();
+  renderTreeTable(); renderInfiniteTable(); renderEditableTable();
+  renderGroupTable(); renderStickyTable(); renderFrozenTable();
+}
+
 function toggleTheme() {
   pageTheme = pageTheme === 'light' ? 'dark' : 'light';
   document.documentElement.setAttribute('data-theme', pageTheme === 'dark' ? 'dark' : '');
+  try{localStorage.setItem('ktv-theme',pageTheme);}catch(e){}
   const btn = document.getElementById('theme-toggle');
   if (pageTheme === 'dark') {
     btn.innerHTML = '<svg viewBox="0 0 20 20" style="width:16px;height:16px;fill:currentColor"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg> Dark';
   } else {
     btn.innerHTML = '<svg viewBox="0 0 20 20" style="width:16px;height:16px;fill:currentColor"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/></svg> Light';
   }
-  renderFrozenTable();
-  renderGroupTable();
-  renderStickyTable();
+  renderAll();
 }
 
 // ===================== SIDEBAR =====================
@@ -1168,15 +1192,25 @@ function mkTd(html, extra) {
   return td;
 }
 
+function colors() {
+  const d = pageTheme === 'dark';
+  return {
+    hdr: d?'#1e2d40':'#f5f5f5', hdrTxt: d?'#e2e8f0':'#333',
+    sep: d?'#374151':'#e0e0e0', row: d?'#0f172a':'#fff',
+    alt: d?'#1a2332':'#fafafa', txt: d?'#e2e8f0':'',
+  };
+}
+
 // ===================== BASIC TABLE =====================
 function renderBasicTable() {
+  const c = colors();
   const t = document.getElementById('basic-table');
   t.innerHTML = '';
   const thead = t.createTHead();
   const htr = thead.insertRow();
   ['#','Name','Department','Score','Grade'].forEach(h => {
     const th = mkTh(h);
-    th.style.cssText = 'background:#f5f5f5;color:#333;border-bottom-color:#e0e0e0';
+    th.style.cssText = `background:${c.hdr};color:${c.hdrTxt};border-bottom-color:${c.sep}`;
     htr.appendChild(th);
   });
   const tbody = t.createTBody();
@@ -1189,7 +1223,8 @@ function renderBasicTable() {
     });
     [p.id, p.name, p.dept, p.score, gradeSpan(p.grade)].forEach((v, i) => {
       const td = mkTd(v);
-      td.style.borderBottomColor = '#e0e0e0';
+      td.style.borderBottomColor = c.sep;
+      if (c.txt) td.style.color = c.txt;
       tr.appendChild(td);
     });
   });
@@ -1197,58 +1232,64 @@ function renderBasicTable() {
   // phone
   const ph = document.getElementById('phone-basic');
   ph.innerHTML = '<table class="phone-table"><thead><tr><th>Name</th><th>Dept</th><th>Score</th></tr></thead><tbody>' +
-    PEOPLE.map((p,i) => `<tr style="background:${i%2?'#fafafa':'#fff'}"><td>${p.name}</td><td>${p.dept}</td><td>${p.score}</td></tr>`).join('') +
+    PEOPLE.map((p,i) => `<tr><td>${p.name}</td><td>${p.dept}</td><td>${p.score}</td></tr>`).join('') +
     '</tbody></table>';
 }
 
 // ===================== HTABLE =====================
 function renderHTable() {
+  const c = colors();
+  const rowA = pageTheme==='dark'?'#111827':'#fff';
+  const rowB = pageTheme==='dark'?'#1a2a3a':'#f0f7ff';
+  const sep  = pageTheme==='dark'?'#2d4a6a':'#bae0ff';
   const t = document.getElementById('htable');
   t.innerHTML = '';
   const cols = ['ID','Name','Department','Score','Grade','Note','Q1','Q2','Q3','Q4','YTD'];
   const thead = t.createTHead();
   const htr = thead.insertRow();
-  cols.forEach(c => {
-    const th = mkTh(c, {background:'#1677ff', color:'#fff', borderBottomColor:'#bae0ff', minWidth:'90px'});
+  cols.forEach(col => {
+    const th = mkTh(col, {background:'#1677ff', color:'#fff', borderBottomColor:sep, minWidth:'90px'});
     htr.appendChild(th);
   });
   const tbody = t.createTBody();
   PEOPLE.forEach((p, i) => {
     const tr = tbody.insertRow();
     tr.className = 'data-row';
-    tr.style.background = i%2===0?'#fff':'#f0f7ff';
+    tr.style.background = i%2===0?rowA:rowB;
     const vals = [p.id, p.name, p.dept, p.score, p.grade, p.note,
       Math.round(p.score*.9), Math.round(p.score*.95), Math.round(p.score*1.02), Math.round(p.score*.98), p.score];
     vals.forEach(v => {
-      const td = mkTd(v, {borderBottomColor:'#bae0ff'});
+      const td = mkTd(v, {borderBottomColor:sep});
+      if (c.txt) td.style.color = c.txt;
       tr.appendChild(td);
     });
   });
   // phone
   const ph = document.getElementById('phone-htable');
   ph.innerHTML = '<div style="overflow:auto;padding:4px"><table class="phone-table" style="width:max-content"><thead><tr>' +
-    cols.map(c=>`<th style="min-width:56px">${c}</th>`).join('') +
+    cols.map(col=>`<th style="min-width:56px">${col}</th>`).join('') +
     '</tr></thead><tbody>' +
-    PEOPLE.map((p,i)=>`<tr style="background:${i%2?'#f0f7ff':'#fff'}">${[p.id,p.name,p.dept,p.score,p.grade,p.note,'','','','',''].map(v=>`<td>${v}</td>`).join('')}</tr>`).join('') +
+    PEOPLE.map((p,i)=>`<tr>${[p.id,p.name,p.dept,p.score,p.grade,p.note,'','','','',''].map(v=>`<td>${v}</td>`).join('')}</tr>`).join('') +
     '</tbody></table></div>';
 }
 
 // ===================== ROW CELL =====================
 function renderRowCellTable() {
+  const c = colors();
   const t = document.getElementById('rowcell-table');
   t.innerHTML = '';
   const thead = t.createTHead();
   const htr = thead.insertRow();
   ['Name','Department','Score','Grade','Note'].forEach(h => {
-    htr.appendChild(mkTh(h, {background:'#f5f5f5',color:'#333',borderBottomColor:'#e0e0e0'}));
+    htr.appendChild(mkTh(h, {background:c.hdr,color:c.hdrTxt,borderBottomColor:c.sep}));
   });
   const tbody = t.createTBody();
   PEOPLE.slice(0,5).forEach((p, i) => {
     const tr = tbody.insertRow();
     tr.className = 'data-row';
-    tr.style.background = i%2===0?'#fff':'#fafafa';
+    tr.style.background = i%2===0?c.row:c.alt;
     [p.name, p.dept, p.score, gradeSpan(p.grade), p.note].forEach(v => {
-      tr.appendChild(mkTd(v, {borderBottomColor:'#e0e0e0'}));
+      tr.appendChild(mkTd(v, {borderBottomColor:c.sep, color:c.txt}));
     });
   });
 }
@@ -1383,20 +1424,21 @@ function renderPaginatedTable() {
   if (pagedState.page > totalPages) pagedState.page = totalPages;
   const slice = PEOPLE.slice((pagedState.page-1)*pageSize, pagedState.page*pageSize);
 
+  const c = colors();
   const table = document.getElementById('paged-table');
   table.innerHTML = '';
   const thead = table.createTHead();
   const htr = thead.insertRow();
   ['Name','Department','Score','Grade'].forEach(h => {
-    htr.appendChild(mkTh(h, {background:'#f5f5f5',color:'#333',borderBottomColor:'#e0e0e0'}));
+    htr.appendChild(mkTh(h, {background:c.hdr,color:c.hdrTxt,borderBottomColor:c.sep}));
   });
   const tbody = table.createTBody();
   slice.forEach((p, i) => {
     const tr = tbody.insertRow();
     tr.className = 'data-row';
-    tr.style.background = i%2===0?'#fff':'#fafafa';
+    tr.style.background = i%2===0?c.row:c.alt;
     [p.name, p.dept, p.score, gradeSpan(p.grade)].forEach(v => {
-      tr.appendChild(mkTd(v, {borderBottomColor:'#e0e0e0'}));
+      tr.appendChild(mkTd(v, {borderBottomColor:c.sep, color:c.txt}));
     });
   });
 
@@ -1429,30 +1471,31 @@ function toggleEmptyDemo() {
   renderEmptyDemo();
 }
 function renderEmptyDemo() {
-  const c = document.getElementById('empty-demo-container');
+  const col = colors();
+  const cont = document.getElementById('empty-demo-container');
   if (!emptyHasData) {
-    c.innerHTML = `<div class="empty-state" style="border:1px solid var(--border);border-radius:6px">
+    cont.innerHTML = `<div class="empty-state" style="border:1px solid var(--border);border-radius:6px">
       <div class="empty-icon">&#128203;</div>
       <div class="empty-title">No Data Available</div>
       <div class="empty-sub">Try adjusting your search criteria or add new records.</div>
     </div>`;
   } else {
-    c.innerHTML = '';
+    cont.innerHTML = '';
     const wrap = document.createElement('div');
     wrap.className = 'demo-table-wrap';
     const table = document.createElement('table');
     table.className = 'demo-table';
     const thead = table.createTHead();
     const htr = thead.insertRow();
-    ['Name','Dept','Score'].forEach(h => htr.appendChild(mkTh(h, {background:'#f5f5f5',color:'#333',borderBottomColor:'#e0e0e0'})));
+    ['Name','Dept','Score'].forEach(h => htr.appendChild(mkTh(h, {background:col.hdr,color:col.hdrTxt,borderBottomColor:col.sep})));
     const tbody = table.createTBody();
     PEOPLE.slice(0,3).forEach((p,i) => {
       const tr = tbody.insertRow();
-      tr.style.background = i%2?'#fafafa':'#fff';
-      [p.name, p.dept, p.score].forEach(v => tr.appendChild(mkTd(v, {borderBottomColor:'#e0e0e0'})));
+      tr.style.background = i%2?col.alt:col.row;
+      [p.name, p.dept, p.score].forEach(v => tr.appendChild(mkTd(v, {borderBottomColor:col.sep, color:col.txt})));
     });
     wrap.appendChild(table);
-    c.appendChild(wrap);
+    cont.appendChild(wrap);
   }
 }
 
@@ -1467,16 +1510,18 @@ function renderSearchTable(query) {
     document.getElementById('search-count').textContent = '';
     return;
   }
+  const c = colors();
   const thead = table.createTHead();
   const htr = thead.insertRow();
-  ['Name','Department','Score','Grade'].forEach(h => htr.appendChild(mkTh(h, {background:'#f5f5f5',color:'#333',borderBottomColor:'#e0e0e0'})));
+  ['Name','Department','Score','Grade'].forEach(h => htr.appendChild(mkTh(h, {background:c.hdr,color:c.hdrTxt,borderBottomColor:c.sep})));
   const tbody = table.createTBody();
   filtered.forEach((p, i) => {
     const tr = tbody.insertRow();
     tr.className = 'data-row';
-    tr.style.background = i%2===0?'#fff':'#fafafa';
+    tr.style.background = i%2===0?c.row:c.alt;
     const nameTd = document.createElement('td');
-    nameTd.style.borderBottomColor = '#e0e0e0';
+    nameTd.style.borderBottomColor = c.sep;
+    if (c.txt) nameTd.style.color = c.txt;
     if (query) {
       const re = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
       nameTd.innerHTML = p.name.replace(re, '<mark style="background:#fef08a">$1</mark>');
@@ -1484,7 +1529,7 @@ function renderSearchTable(query) {
       nameTd.textContent = p.name;
     }
     tr.appendChild(nameTd);
-    [p.dept, p.score, gradeSpan(p.grade)].forEach(v => tr.appendChild(mkTd(v, {borderBottomColor:'#e0e0e0'})));
+    [p.dept, p.score, gradeSpan(p.grade)].forEach(v => tr.appendChild(mkTd(v, {borderBottomColor:c.sep, color:c.txt})));
   });
   document.getElementById('search-count').textContent = `Showing ${filtered.length} of ${PEOPLE.length} records`;
 }
@@ -1527,22 +1572,23 @@ function renderGroupTable() {
 // ===================== EXPANDABLE =====================
 let expandedRows = new Set();
 function renderExpandableTable() {
+  const c = colors();
   const table = document.getElementById('expandable-table');
   table.innerHTML = '';
   const thead = table.createTHead();
   const htr = thead.insertRow();
   ['','Name','Department','Score','Note'].forEach(h => {
-    htr.appendChild(mkTh(h, {background:'#f5f5f5',color:'#333',borderBottomColor:'#e0e0e0'}));
+    htr.appendChild(mkTh(h, {background:c.hdr,color:c.hdrTxt,borderBottomColor:c.sep}));
   });
   const tbody = table.createTBody();
   PEOPLE.forEach((p, i) => {
     const isOpen = expandedRows.has(p.id);
     const tr = tbody.insertRow();
     tr.className = 'data-row';
-    tr.style.background = i%2===0?'#fff':'#fafafa';
+    tr.style.background = i%2===0?c.row:c.alt;
 
     const td0 = document.createElement('td');
-    td0.style.borderBottomColor = '#e0e0e0';
+    td0.style.borderBottomColor = c.sep;
     td0.style.width = '36px';
     const btn = document.createElement('button');
     btn.className = 'expand-btn';
@@ -1555,13 +1601,13 @@ function renderExpandableTable() {
     td0.appendChild(btn);
     tr.appendChild(td0);
 
-    [p.name, p.dept, p.score, p.note].forEach(v => tr.appendChild(mkTd(v, {borderBottomColor:'#e0e0e0'})));
+    [p.name, p.dept, p.score, p.note].forEach(v => tr.appendChild(mkTd(v, {borderBottomColor:c.sep, color:c.txt})));
 
     if (isOpen) {
       const etr = tbody.insertRow();
       const etd = document.createElement('td');
       etd.colSpan = 5;
-      etd.style.cssText = 'padding:10px 16px;font-size:12px;color:var(--text-muted);border-bottom:1px solid #e0e0e0;background:rgba(59,130,246,.04)';
+      etd.style.cssText = `padding:10px 16px;font-size:12px;color:var(--text-muted);border-bottom:1px solid ${c.sep};background:rgba(59,130,246,.04)`;
       etd.innerHTML = `<strong>${p.name}</strong> - ID: ${p.id} | Grade: ${p.grade} | Note: ${p.note}<br><em style="font-size:11px">Click the arrow again to collapse.</em>`;
       etr.appendChild(etd);
     }
@@ -1583,8 +1629,9 @@ function renderCheckboxTable() {
   table.innerHTML = '';
   const thead = table.createTHead();
   const htr = thead.insertRow();
+  const c = colors();
   const thCb = document.createElement('th');
-  thCb.style.cssText = 'background:#f5f5f5;color:#333;border-bottom-color:#e0e0e0;width:36px';
+  thCb.style.cssText = `background:${c.hdr};color:${c.hdrTxt};border-bottom-color:${c.sep};width:36px`;
   const cbAll = document.createElement('input');
   cbAll.type = 'checkbox'; cbAll.className = 'cb';
   cbAll.checked = checkedRows.size === PEOPLE.length;
@@ -1596,7 +1643,7 @@ function renderCheckboxTable() {
   thCb.appendChild(cbAll);
   htr.appendChild(thCb);
   ['Name','Department','Score','Grade'].forEach(h => {
-    htr.appendChild(mkTh(h, {background:'#f5f5f5',color:'#333',borderBottomColor:'#e0e0e0'}));
+    htr.appendChild(mkTh(h, {background:c.hdr,color:c.hdrTxt,borderBottomColor:c.sep}));
   });
 
   const tbody = table.createTBody();
@@ -1604,9 +1651,9 @@ function renderCheckboxTable() {
     const tr = tbody.insertRow();
     tr.className = 'data-row';
     const checked = checkedRows.has(p.id);
-    tr.style.background = checked ? 'rgba(59,130,246,.08)' : i%2===0?'#fff':'#fafafa';
+    tr.style.background = checked ? 'rgba(59,130,246,.08)' : i%2===0?c.row:c.alt;
     const tdCb = document.createElement('td');
-    tdCb.style.borderBottomColor = '#e0e0e0';
+    tdCb.style.borderBottomColor = c.sep;
     const cb = document.createElement('input');
     cb.type = 'checkbox'; cb.className = 'cb'; cb.checked = checked;
     cb.onchange = () => {
@@ -1615,7 +1662,7 @@ function renderCheckboxTable() {
     };
     tdCb.appendChild(cb);
     tr.appendChild(tdCb);
-    [p.name, p.dept, p.score, gradeSpan(p.grade)].forEach(v => tr.appendChild(mkTd(v, {borderBottomColor:'#e0e0e0'})));
+    [p.name, p.dept, p.score, gradeSpan(p.grade)].forEach(v => tr.appendChild(mkTd(v, {borderBottomColor:c.sep, color:c.txt})));
   });
 }
 function batchAct(action) {
