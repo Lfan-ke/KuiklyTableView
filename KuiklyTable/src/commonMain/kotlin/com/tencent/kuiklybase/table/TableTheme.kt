@@ -1312,3 +1312,86 @@ class TreeTableView : ComposeView<TreeTableAttr, TreeTableEvent>() {
 fun ViewContainer<*, *>.TreeTable(init: TreeTableView.() -> Unit) {
     addChild(TreeTableView(), init)
 }
+
+// ---------------------------------------------------------------------------
+// InfiniteTable - load-more / infinite-scroll variant
+// ---------------------------------------------------------------------------
+
+/**
+ * Table variant with automatic infinite-scroll / load-more footer.
+ *
+ * Identical to [Table] for row content; appends a footer row that reflects
+ * [isLoading] / [hasMore] state and fires [onLoadMore] via native
+ * [TableEvent.reachEnd] or when the user taps the footer manually.
+ */
+fun ViewContainer<*, *>.InfiniteTable(
+    isLoading: Boolean,
+    hasMore: Boolean,
+    onLoadMore: () -> Unit,
+    theme: TableTheme = TableTheme.Default,
+    height: Float = 360f,
+    init: TableView.() -> Unit,
+) {
+    Table {
+        attr {
+            this.height(height)
+            separatorColor(theme.separatorColor)
+            separatorHeight(theme.separatorHeight)
+        }
+        event {
+            reachEnd {
+                if (!isLoading && hasMore) onLoadMore()
+            }
+        }
+        this.init()
+        // Footer row - acts as load-more trigger and status indicator
+        TableRow {
+            attr {
+                rowHeight(48f)
+                backgroundColor(Color(0xFFFAFAFAL))
+                flexDirectionRow()
+            }
+            event {
+                rowClick { _ -> if (!isLoading && hasMore) onLoadMore() }
+            }
+            TableCell {
+                attr {
+                    flex(1f)
+                    allCenter()
+                }
+                if (isLoading) {
+                    View {
+                        attr {
+                            flexDirectionRow()
+                            allCenter()
+                        }
+                        View {
+                            attr {
+                                width(14f)
+                                height(14f)
+                                borderRadius(7f)
+                                border(Border(2f, BorderStyle.SOLID, Color(0xFF1677FFL)))
+                                marginRight(8f)
+                            }
+                        }
+                        Text {
+                            attr {
+                                fontSize(13f)
+                                color(Color(0xFF1677FFL))
+                                text("加载中...")
+                            }
+                        }
+                    }
+                } else {
+                    Text {
+                        attr {
+                            fontSize(13f)
+                            color(if (hasMore) Color(0xFF1677FFL) else Color(0xFFBBBBBBL))
+                            text(if (hasMore) "点击或上拉加载更多" else "全部加载完毕")
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

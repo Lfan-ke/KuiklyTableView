@@ -112,6 +112,17 @@ open class TableEvent : GroupEvent() {
             handler(index)
         }
     }
+
+    fun reachEnd(handler: () -> Unit) {
+        register("reachEnd") { _ -> handler() }
+    }
+
+    fun scroll(handler: (offsetY: Float) -> Unit) {
+        register("scroll") { data ->
+            val offset = (data as? Number)?.toFloat() ?: 0f
+            handler(offset)
+        }
+    }
 }
 
 open class TableRowView : GroupView<TableRowAttr, TableRowEvent>() {

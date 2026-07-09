@@ -34,6 +34,8 @@ import com.tencent.kuiklybase.table.SwipeableTableRow
 import com.tencent.kuiklybase.table.TreeTable
 import com.tencent.kuiklybase.table.TreeTableColumn
 import com.tencent.kuiklybase.table.TreeTableNode
+import com.tencent.kuiklybase.table.InfiniteTable
+import com.tencent.kuikly.core.timer.setTimeout
 import com.kuikly.kuiklytable.base.BasePager
 
 private data class TableItem(val name: String, val score: Int, val grade: String)
@@ -53,6 +55,9 @@ internal class TableViewDemoPage : BasePager() {
     private var searchQuery by observable("")
     private var searchSortOrder by observable(SortOrder.DESC)
     private var searchSortKey by observable("score")
+    private var infiniteItems by observable(listOf("Item 1", "Item 2", "Item 3", "Item 4", "Item 5"))
+    private var infiniteLoading by observable(false)
+    private var infiniteHasMore by observable(true)
 
     private val themes = listOf(TableTheme.Default, TableTheme.AntBlue, TableTheme.Teal, TableTheme.Dark)
     private val themeNames = listOf("Default", "Ant Blue", "Teal", "Dark")
@@ -365,6 +370,9 @@ internal class TableViewDemoPage : BasePager() {
 
             // Tree table section
             ctx.addTreeTableSection(this)
+
+            // Infinite scroll section
+            ctx.addInfiniteSection(this)
         }
     }
 
@@ -1328,6 +1336,104 @@ internal class TableViewDemoPage : BasePager() {
                     }
                     onExpandChange { id, expanded ->
                         KLog.i("TreeTableDemo", "$id expanded=$expanded")
+                    }
+                }
+            }
+
+            View { attr { height(40f) } }
+        }
+    }
+
+    private fun addInfiniteSection(container: ViewContainer<*, *>) {
+        val ctx = this
+        container.apply {
+            View {
+                attr {
+                    height(40f)
+                    backgroundColor(Color(0xFFF7F7F7L))
+                    justifyContentCenter()
+                    paddingLeft(16f)
+                    marginTop(12f)
+                }
+                Text {
+                    attr {
+                        fontSize(14f)
+                        color(Color(0xFF1A1A1AL))
+                        fontWeight700()
+                        text("无限滚动 - InfiniteTable（点击或上拉加载）")
+                    }
+                }
+            }
+
+            InfiniteTable(
+                isLoading = ctx.infiniteLoading,
+                hasMore = ctx.infiniteHasMore,
+                onLoadMore = {
+                    if (!ctx.infiniteLoading && ctx.infiniteHasMore) {
+                        ctx.infiniteLoading = true
+                        val nextBatch = (ctx.infiniteItems.size + 1..ctx.infiniteItems.size + 5)
+                            .map { "Item $it" }
+                        setTimeout(pagerId, 1200) {
+                            ctx.infiniteItems = ctx.infiniteItems + nextBatch
+                            ctx.infiniteLoading = false
+                            if (ctx.infiniteItems.size >= 20) ctx.infiniteHasMore = false
+                        }
+                    }
+                },
+                theme = ctx.themes[ctx.activeThemeIndex],
+                height = 300f,
+            ) {
+                // Header
+                TableRow {
+                    attr {
+                        rowHeight(44f)
+                        backgroundColor(ctx.themes[ctx.activeThemeIndex].headerBackground)
+                        flexDirectionRow()
+                    }
+                    TableCell {
+                        attr { width(48f); justifyContentCenter(); alignItemsCenter() }
+                        Text {
+                            attr {
+                                fontSize(13f); fontWeight700()
+                                color(ctx.themes[ctx.activeThemeIndex].headerTextColor)
+                                text("#")
+                            }
+                        }
+                    }
+                    TableCell {
+                        attr { flex(1f); justifyContentCenter(); paddingLeft(8f) }
+                        Text {
+                            attr {
+                                fontSize(13f); fontWeight700()
+                                color(ctx.themes[ctx.activeThemeIndex].headerTextColor)
+                                text("数据项")
+                            }
+                        }
+                    }
+                }
+                // Data rows
+                ctx.infiniteItems.forEachIndexed { idx, item ->
+                    TableRow {
+                        attr {
+                            rowHeight(44f)
+                            flexDirectionRow()
+                            backgroundColor(if (idx % 2 == 0) Color(0xFFFFFFFFL) else Color(0xFFFAFAFAL))
+                        }
+                        TableCell {
+                            attr { width(48f); justifyContentCenter(); alignItemsCenter() }
+                            Text {
+                                attr {
+                                    fontSize(13f); color(Color(0xFF999999L))
+                                    text("${idx + 1}")
+                                }
+                            }
+                        }
+                        TableCell {
+                            attr { flex(1f); justifyContentCenter(); paddingLeft(8f) }
+                            Text {
+                                attr { fontSize(13f); color(Color(0xFF212121L)); text(item) }
+                            }
+                        }
                     }
                 }
             }
