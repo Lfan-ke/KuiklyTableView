@@ -354,6 +354,7 @@ details.code-toggle[open] summary::before{transform:rotate(90deg)}
   .main{margin-left:0}
   .phone-frame{display:none}
 }
+code,pre,kbd,samp{font-family:'JetBrains Mono','Fira Code',Consolas,Menlo,monospace}
 </style>
 <script>(function(){var s;try{s=localStorage.getItem('ktv-theme')}catch(e){}if(!s)s=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';if(s==='dark')document.documentElement.setAttribute('data-theme','dark')})()</script>
 </head>
@@ -1318,7 +1319,9 @@ function themeRow(tk) {
   const t = THEMES[tk] || THEMES.Default;
   if (pageTheme !== 'dark' || tk === 'Dark') return t;
   const c = colors();
-  return Object.assign({}, t, {rowBg:c.row, altBg:c.alt, sep:c.sep, summaryBg:'#1e2d3a'});
+  const ov = {rowBg:c.row, altBg:c.alt, sep:c.sep, summaryBg:'#1e2d3a'};
+  if (tk === 'Default') { ov.headerBg = c.hdr; ov.headerText = c.hdrTxt; }
+  return Object.assign({}, t, ov);
 }
 function themeTxt(tk) {
   return (pageTheme === 'dark' || tk === 'Dark') ? '#e2e8f0' : '';
@@ -1337,7 +1340,7 @@ function renderThemeTable(tk) {
   const thead = table.createTHead();
   const htr = thead.insertRow();
   ['Name','Department','Score','Grade'].forEach(h => {
-    htr.appendChild(mkTh(h, {background:t.headerBg, color:t.headerText, borderBottomColor:r.sep}));
+    htr.appendChild(mkTh(h, {background:r.headerBg, color:r.headerText, borderBottomColor:r.sep}));
   });
   const tbody = table.createTBody();
   PEOPLE.forEach((p, i) => {
@@ -1351,15 +1354,15 @@ function renderThemeTable(tk) {
   document.getElementById('theme-table-wrap').style.borderColor = r.sep;
 }
 function renderPhoneTheme(tk) {
-  const t = THEMES[tk] || THEMES.Default;
+  const r = themeRow(tk);
   const ph = document.getElementById('phone-theme');
-  ph.style.background = t.rowBg;
+  ph.style.background = r.rowBg;
   ph.innerHTML = '<table class="phone-table"><thead><tr>' +
     ['Name','Dept','Score','Grade'].map(h=>
-      `<th style="background:${t.headerBg};color:${t.headerText};border-bottom:1px solid ${t.sep}">${h}</th>`
+      `<th style="background:${r.headerBg};color:${r.headerText};border-bottom:1px solid ${r.sep}">${h}</th>`
     ).join('') + '</tr></thead><tbody>' +
-    PEOPLE.map((p,i)=>`<tr style="background:${i%2?t.altBg:t.rowBg}">` +
-      [p.name,p.dept,p.score,p.grade].map(v=>`<td style="border-bottom:1px solid ${t.sep};color:${tk==='Dark'?t.headerText:''}">${v}</td>`).join('') +
+    PEOPLE.map((p,i)=>`<tr style="background:${i%2?r.altBg:r.rowBg}">` +
+      [p.name,p.dept,p.score,p.grade].map(v=>`<td style="border-bottom:1px solid ${r.sep};color:${themeTxt(tk)}">${v}</td>`).join('') +
       '</tr>').join('') + '</tbody></table>';
 }
 
@@ -1371,12 +1374,13 @@ function renderSortTable() {
   const table = document.getElementById('sort-table');
   table.innerHTML = '';
   const cols = [{key:'name',label:'Name'},{key:'dept',label:'Department'},{key:'score',label:'Score'},{key:'grade',label:'Grade'}];
+  const r = themeRow(tk);
   const thead = table.createTHead();
   const htr = thead.insertRow();
   cols.forEach(col => {
     const th = document.createElement('th');
     th.className = 'sortable';
-    th.style.cssText = `background:${t.headerBg};color:${t.headerText};border-bottom-color:${t.sep};cursor:pointer`;
+    th.style.cssText = `background:${r.headerBg};color:${r.headerText};border-bottom-color:${r.sep};cursor:pointer`;
     const isCur = sortState.col === col.key && sortState.dir !== 0;
     const dirCls = isCur ? (sortState.dir === 1 ? 'asc' : 'desc') : '';
     th.innerHTML = `${col.label} <span class="sort-icon ${dirCls}" style="opacity:${isCur?1:.35}"></span>`;
@@ -1406,7 +1410,6 @@ function renderSortTable() {
       return sortState.dir * (av < bv ? -1 : av > bv ? 1 : 0);
     });
   }
-  const r = themeRow(tk);
   const tbody = table.createTBody();
   data.forEach((p, i) => {
     const tr = tbody.insertRow();
@@ -1428,7 +1431,7 @@ function renderThemedRows(tk) {
   const thead = table.createTHead();
   const htr = thead.insertRow();
   ['Name','Dept','Score','Grade'].forEach(h => {
-    htr.appendChild(mkTh(h, {background:t.headerBg, color:t.headerText, borderBottomColor:r.sep}));
+    htr.appendChild(mkTh(h, {background:r.headerBg, color:r.headerText, borderBottomColor:r.sep}));
   });
   const tbody = table.createTBody();
   PEOPLE.forEach((p, i) => {
