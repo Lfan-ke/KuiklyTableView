@@ -51,9 +51,11 @@ body{font-family:'HarmonyOS Sans SC','HarmonyOS Sans','鸿蒙黑体','Microsoft 
   box-shadow:0 2px 16px rgba(59,130,246,.35);
   backdrop-filter:blur(8px);
 }
-.top-bar .logo{font-size:17px;font-weight:700;color:#fff;letter-spacing:-.3px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:10px}
+.top-bar .logo{color:#fff;flex:1;display:flex;align-items:center;gap:10px;min-width:0}
 .top-bar .logo-icon{width:32px;height:32px;background:rgba(255,255,255,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;border:1px solid rgba(255,255,255,.2);flex-shrink:0}
-.top-bar .logo span{opacity:.75;font-weight:400;font-size:12px;margin-left:0}
+.top-bar .logo-text{display:flex;flex-direction:column;line-height:1.2;min-width:0}
+.top-bar .logo-name{font-size:17px;font-weight:700;letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-bar .logo span{font-size:10px;font-weight:400;opacity:.7;letter-spacing:.3px}
 .top-bar-actions{display:flex;align-items:center;gap:8px}
 .btn-icon{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;display:flex;align-items:center;gap:5px;text-decoration:none;transition:all .2s;backdrop-filter:blur(4px);font-family:inherit}
 .btn-icon:hover{background:rgba(255,255,255,.22);transform:translateY(-1px)}
@@ -333,8 +335,10 @@ details.code-toggle[open] summary::before{transform:rotate(90deg)}
 <header class="top-bar">
   <div class="logo">
     <div class="logo-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:block"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg></div>
-    KuiklyTableView
-    <span>Table Components</span>
+    <div class="logo-text">
+      <div class="logo-name">KuiklyTableView</div>
+      <span>Table Components</span>
+    </div>
   </div>
   <div class="top-bar-actions">
     <a class="btn-icon" href="https://github.com/Lfan-ke/KuiklyTableView" target="_blank" rel="noopener">
