@@ -24,6 +24,8 @@ import com.tencent.kuiklybase.table.theme
 import com.tencent.kuiklybase.table.TableHeaderGroup
 import com.tencent.kuiklybase.table.TableGroupCell
 import com.tencent.kuiklybase.table.ExpandableTableRow
+import com.tencent.kuiklybase.table.CheckboxTableRow
+import com.tencent.kuiklybase.table.TableBatchActionBar
 import com.kuikly.kuiklytable.base.BasePager
 
 private data class TableItem(val name: String, val score: Int, val grade: String)
@@ -39,6 +41,7 @@ internal class TableViewDemoPage : BasePager() {
     private var currentPage by observable(1)
     private val pageSize = 3
     private var expandedRows by observable(setOf<Int>())
+    private var selectedItems by observable(setOf<String>())
 
     private val themes = listOf(TableTheme.Default, TableTheme.AntBlue, TableTheme.Teal, TableTheme.Dark)
     private val themeNames = listOf("Default", "Ant Blue", "Teal", "Dark")
@@ -339,6 +342,9 @@ internal class TableViewDemoPage : BasePager() {
 
             // Expandable + grouped-header section
             ctx.addExpandableSection(this)
+
+            // Multi-select checkbox section
+            ctx.addCheckboxSection(this)
         }
     }
 
@@ -508,6 +514,192 @@ internal class TableViewDemoPage : BasePager() {
                     }
                 }
             }
+        }
+    }
+
+    private fun addCheckboxSection(container: ViewContainer<*, *>) {
+        val ctx = this
+        val theme = ctx.themes[ctx.activeThemeIndex]
+        container.apply {
+            View {
+                attr {
+                    height(40f)
+                    backgroundColor(Color(0xFFF7F7F7L))
+                    justifyContentCenter()
+                    paddingLeft(16f)
+                    marginTop(12f)
+                }
+                Text {
+                    attr {
+                        fontSize(14f)
+                        color(Color(0xFF1A1A1AL))
+                        fontWeight700()
+                        text("多选 - CheckboxTableRow + 批量操作栏")
+                    }
+                }
+            }
+
+            // Batch action bar (visible when any row selected)
+            TableBatchActionBar(
+                selectedCount = ctx.selectedItems.size,
+                totalCount = ctx.rawItems.size,
+                theme = theme,
+                onSelectAll = {
+                    ctx.selectedItems = ctx.rawItems.map { it.name }.toSet()
+                },
+                onClearAll = {
+                    ctx.selectedItems = emptySet()
+                },
+                actions = listOf(
+                    "删除" to {
+                        KLog.i("CheckboxDemo", "delete: ${ctx.selectedItems}")
+                        ctx.selectedItems = emptySet()
+                    }
+                ),
+            )
+
+            // Header row
+            Table {
+                attr {
+                    height(320f)
+                    theme(theme)
+                }
+                ThemedHeaderRow(theme = theme) {
+                    // Checkbox placeholder header cell
+                    TableCell {
+                        attr {
+                            width(40f)
+                            justifyContentCenter()
+                            alignItemsCenter()
+                        }
+                        // select-all checkbox in header
+                        View {
+                            attr {
+                                width(18f)
+                                height(18f)
+                                borderRadius(3f)
+                                justifyContentCenter()
+                                alignItemsCenter()
+                                backgroundColor(
+                                    if (ctx.selectedItems.size == ctx.rawItems.size && ctx.rawItems.isNotEmpty())
+                                        Color(0xFFFFFFFFL)
+                                    else
+                                        Color(red255 = 255, green255 = 255, blue255 = 255, alpha01 = 0.3f)
+                                )
+                            }
+                            event {
+                                click {
+                                    ctx.selectedItems = if (ctx.selectedItems.size == ctx.rawItems.size)
+                                        emptySet()
+                                    else
+                                        ctx.rawItems.map { it.name }.toSet()
+                                }
+                            }
+                            if (ctx.selectedItems.size == ctx.rawItems.size && ctx.rawItems.isNotEmpty()) {
+                                Text {
+                                    attr {
+                                        fontSize(11f)
+                                        color(theme.headerBackground)
+                                        text("✓")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    TableCell {
+                        attr { flex(2f); justifyContentCenter(); paddingLeft(4f) }
+                        Text {
+                            attr {
+                                fontSize(14f)
+                                color(theme.headerTextColor)
+                                fontWeight700()
+                                text("Name")
+                            }
+                        }
+                    }
+                    TableCell {
+                        attr { flex(1f); justifyContentCenter(); alignItemsCenter() }
+                        Text {
+                            attr {
+                                fontSize(14f)
+                                color(theme.headerTextColor)
+                                fontWeight700()
+                                text("Score")
+                            }
+                        }
+                    }
+                    TableCell {
+                        attr { flex(1f); justifyContentCenter(); alignItemsCenter() }
+                        Text {
+                            attr {
+                                fontSize(14f)
+                                color(theme.headerTextColor)
+                                fontWeight700()
+                                text("Grade")
+                            }
+                        }
+                    }
+                }
+
+                ctx.rawItems.forEachIndexed { index, item ->
+                    val selected = item.name in ctx.selectedItems
+                    CheckboxTableRow(
+                        theme = theme,
+                        index = index,
+                        selected = selected,
+                        onToggle = {
+                            ctx.selectedItems = if (selected)
+                                ctx.selectedItems - item.name
+                            else
+                                ctx.selectedItems + item.name
+                        }
+                    ) {
+                        TableCell {
+                            attr { flex(2f); justifyContentCenter(); paddingLeft(4f) }
+                            Text {
+                                attr {
+                                    fontSize(14f)
+                                    color(Color(0xFF212121L))
+                                    text(item.name)
+                                }
+                            }
+                        }
+                        TableCell {
+                            attr { flex(1f); justifyContentCenter(); alignItemsCenter() }
+                            Text {
+                                attr {
+                                    fontSize(14f)
+                                    color(Color(0xFF212121L))
+                                    text(item.score.toString())
+                                }
+                            }
+                        }
+                        TableCell {
+                            attr { flex(1f); justifyContentCenter(); alignItemsCenter() }
+                            View {
+                                attr {
+                                    paddingLeft(6f)
+                                    paddingRight(6f)
+                                    paddingTop(2f)
+                                    paddingBottom(2f)
+                                    borderRadius(4f)
+                                    backgroundColor(ctx.gradeColor(item.grade))
+                                }
+                                Text {
+                                    attr {
+                                        fontSize(12f)
+                                        color(Color(0xFFFFFFFFL))
+                                        text(item.grade)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Bottom padding
+            View { attr { height(32f) } }
         }
     }
 

@@ -15,6 +15,8 @@
 
 package com.tencent.kuiklybase.table
 
+import com.tencent.kuikly.core.base.Border
+import com.tencent.kuikly.core.base.BorderStyle
 import com.tencent.kuikly.core.base.Color
 import com.tencent.kuikly.core.base.ViewContainer
 import com.tencent.kuikly.core.views.Text
@@ -438,6 +440,179 @@ fun ViewContainer<*, *>.ExpandableTableRow(
                 paddingBottom(8f)
             }
             expandedContent()
+        }
+    }
+}
+
+/**
+ * Selectable data row with a leading checkbox indicator column.
+ *
+ * The caller holds [selected] state and flips it in [onToggle], matching the
+ * stateless DSL pattern used throughout this library.
+ * Use [TableBatchActionBar] above the table to show batch operations when
+ * [selectedCount] > 0.
+ *
+ * @param theme Visual theme.
+ * @param index 0-based row index for zebra striping.
+ * @param selected Whether this row is currently checked.
+ * @param onToggle Called when the user taps the checkbox column.
+ * @param init Main row content (add [TableCell] children here).
+ */
+fun ViewContainer<*, *>.CheckboxTableRow(
+    theme: TableTheme = TableTheme.Default,
+    index: Int,
+    selected: Boolean,
+    onToggle: () -> Unit = {},
+    init: TableRowView.() -> Unit,
+) {
+    TableRow {
+        attr {
+            rowHeight(theme.rowHeight)
+            backgroundColor(
+                if (selected) theme.selectedBackground
+                else if (index % 2 == 0) theme.rowBackground
+                else theme.alternateRowBackground
+            )
+            flexDirectionRow()
+            alignItemsCenter()
+        }
+        TableCell {
+            attr {
+                width(40f)
+                justifyContentCenter()
+                alignItemsCenter()
+            }
+            event { click { onToggle() } }
+            View {
+                attr {
+                    width(18f)
+                    height(18f)
+                    borderRadius(3f)
+                    justifyContentCenter()
+                    alignItemsCenter()
+                    backgroundColor(if (selected) theme.headerBackground else Color(0xFFFFFFFFL))
+                    border(Border(1.5f, BorderStyle.SOLID, if (selected) theme.headerBackground else Color(0xFFCCCCCCL)))
+                }
+                if (selected) {
+                    Text {
+                        attr {
+                            fontSize(11f)
+                            color(theme.headerTextColor)
+                            text("✓")
+                        }
+                    }
+                }
+            }
+        }
+        init()
+    }
+}
+
+/**
+ * Action toolbar displayed when one or more rows are selected — matches the
+ * Ant Design / Element Plus batch-operation bar pattern.
+ *
+ * Renders nothing when [selectedCount] is 0 and [actions] is empty.
+ *
+ * @param selectedCount Number of currently selected rows.
+ * @param totalCount Total row count shown in the label when > 0.
+ * @param theme Visual theme for colors.
+ * @param onSelectAll Called when user taps "全选". Pass null to hide the button.
+ * @param onClearAll Called when user taps "取消". Pass null to hide the button.
+ * @param actions Custom action buttons as label/onClick pairs (e.g. "删除").
+ */
+fun ViewContainer<*, *>.TableBatchActionBar(
+    selectedCount: Int,
+    totalCount: Int = 0,
+    theme: TableTheme = TableTheme.Default,
+    onSelectAll: (() -> Unit)? = null,
+    onClearAll: (() -> Unit)? = null,
+    actions: List<Pair<String, () -> Unit>> = emptyList(),
+) {
+    if (selectedCount == 0 && actions.isEmpty()) return
+    View {
+        attr {
+            height(44f)
+            flexDirectionRow()
+            alignItemsCenter()
+            paddingLeft(12f)
+            paddingRight(12f)
+            backgroundColor(theme.selectedBackground)
+        }
+        Text {
+            attr {
+                fontSize(13f)
+                color(theme.headerBackground)
+                text("已选 $selectedCount${if (totalCount > 0) "/$totalCount" else ""} 项")
+                flex(1f)
+            }
+        }
+        if (onSelectAll != null) {
+            View {
+                attr {
+                    height(28f)
+                    paddingLeft(10f)
+                    paddingRight(10f)
+                    borderRadius(4f)
+                    justifyContentCenter()
+                    alignItemsCenter()
+                    marginRight(8f)
+                    backgroundColor(theme.headerBackground)
+                }
+                event { click { onSelectAll() } }
+                Text {
+                    attr {
+                        fontSize(12f)
+                        color(theme.headerTextColor)
+                        text("全选")
+                    }
+                }
+            }
+        }
+        if (onClearAll != null) {
+            View {
+                attr {
+                    height(28f)
+                    paddingLeft(10f)
+                    paddingRight(10f)
+                    borderRadius(4f)
+                    justifyContentCenter()
+                    alignItemsCenter()
+                    marginRight(8f)
+                    backgroundColor(Color(0xFFFFFFFFL))
+                    border(Border(1f, BorderStyle.SOLID, theme.separatorColor))
+                }
+                event { click { onClearAll() } }
+                Text {
+                    attr {
+                        fontSize(12f)
+                        color(theme.headerBackground)
+                        text("取消")
+                    }
+                }
+            }
+        }
+        actions.forEach { (label, onClick) ->
+            View {
+                attr {
+                    height(28f)
+                    paddingLeft(10f)
+                    paddingRight(10f)
+                    borderRadius(4f)
+                    justifyContentCenter()
+                    alignItemsCenter()
+                    marginRight(6f)
+                    backgroundColor(Color(0xFFF44336L))
+                }
+                event { click { onClick() } }
+                Text {
+                    attr {
+                        fontSize(12f)
+                        color(Color(0xFFFFFFFFL))
+                        text(label)
+                    }
+                }
+            }
         }
     }
 }
