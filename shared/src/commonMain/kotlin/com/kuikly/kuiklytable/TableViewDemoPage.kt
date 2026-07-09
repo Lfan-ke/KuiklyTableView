@@ -16,6 +16,7 @@ import com.tencent.kuiklybase.table.TableCell
 import com.tencent.kuiklybase.table.TableRow
 import com.tencent.kuiklybase.table.TableTheme
 import com.tencent.kuiklybase.table.ThemedHeaderRow
+import com.tencent.kuiklybase.table.PaginationBar
 import com.tencent.kuiklybase.table.ThemedTableRow
 import com.tencent.kuiklybase.table.theme
 import com.kuikly.kuiklytable.base.BasePager
@@ -30,6 +31,8 @@ internal class TableViewDemoPage : BasePager() {
     private var scoreSortOrder by observable(SortOrder.NONE)
     private var nameSortOrder by observable(SortOrder.NONE)
     private var activeThemeIndex by observable(0)
+    private var currentPage by observable(1)
+    private val pageSize = 3
 
     private val themes = listOf(TableTheme.Default, TableTheme.AntBlue, TableTheme.Teal, TableTheme.Dark)
     private val themeNames = listOf("Default", "Ant Blue", "Teal", "Dark")
@@ -61,6 +64,14 @@ internal class TableViewDemoPage : BasePager() {
         nameSortOrder == SortOrder.DESC -> rawItems.sortedByDescending { it.name }
         else -> rawItems
     }
+
+    private fun pagedItems(): List<TableItem> {
+        val sorted = sortedItems()
+        val from = (currentPage - 1) * pageSize
+        return sorted.drop(from).take(pageSize)
+    }
+
+    private fun totalPages(): Int = (rawItems.size + pageSize - 1) / pageSize
 
     override fun body(): ViewBuilder {
         val ctx = this
@@ -175,6 +186,7 @@ internal class TableViewDemoPage : BasePager() {
                         sortOrder = ctx.nameSortOrder,
                         theme = ctx.themes[ctx.activeThemeIndex],
                         onSortClick = {
+                            ctx.currentPage = 1
                             ctx.scoreSortOrder = SortOrder.NONE
                             ctx.nameSortOrder = when (ctx.nameSortOrder) {
                                 SortOrder.NONE, SortOrder.DESC -> SortOrder.ASC
@@ -187,6 +199,7 @@ internal class TableViewDemoPage : BasePager() {
                         sortOrder = ctx.scoreSortOrder,
                         theme = ctx.themes[ctx.activeThemeIndex],
                         onSortClick = {
+                            ctx.currentPage = 1
                             ctx.nameSortOrder = SortOrder.NONE
                             ctx.scoreSortOrder = when (ctx.scoreSortOrder) {
                                 SortOrder.NONE, SortOrder.DESC -> SortOrder.ASC
@@ -211,8 +224,8 @@ internal class TableViewDemoPage : BasePager() {
                     }
                 }
 
-                // Data rows
-                ctx.sortedItems().forEachIndexed { index, item ->
+                // Data rows (current page only)
+                ctx.pagedItems().forEachIndexed { index, item ->
                     ThemedTableRow(theme = ctx.themes[ctx.activeThemeIndex], index = index) {
                         event {
                             click { KLog.i("TableViewDemo", "clicked: ${item.name}") }
@@ -274,6 +287,16 @@ internal class TableViewDemoPage : BasePager() {
                     }
                 }
             }
+
+            // Pagination bar below the sortable table
+            PaginationBar(
+                currentPage = ctx.currentPage,
+                totalPages = ctx.totalPages(),
+                theme = ctx.themes[ctx.activeThemeIndex],
+                showTotal = true,
+                totalItems = ctx.rawItems.size,
+                onPageChange = { ctx.currentPage = it },
+            )
 
             // HTable section
             ctx.addHTableSection(this)

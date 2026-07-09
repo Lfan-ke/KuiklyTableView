@@ -175,3 +175,116 @@ fun ViewContainer<*, *>.SortableHeaderCell(
         init()
     }
 }
+
+/**
+ * Themed pagination bar for use below a [Table] or [HTable].
+ *
+ * The parent page holds [currentPage] state and handles [onPageChange] to
+ * update it; this composable is stateless and re-renders on each state change.
+ *
+ * @param currentPage 1-based current page index.
+ * @param totalPages Total number of pages. Computed as `ceil(totalItems / pageSize)`.
+ * @param theme Visual theme for colors. Defaults to [TableTheme.Default].
+ * @param showTotal When true, shows "共 N 条" label if [totalItems] > 0.
+ * @param totalItems Total item count displayed alongside the pagination.
+ * @param onPageChange Called with the new 1-based page number when user taps a page button.
+ */
+fun ViewContainer<*, *>.PaginationBar(
+    currentPage: Int,
+    totalPages: Int,
+    theme: TableTheme = TableTheme.Default,
+    showTotal: Boolean = true,
+    totalItems: Int = 0,
+    onPageChange: (Int) -> Unit = {},
+) {
+    if (totalPages <= 1 && totalItems == 0) return
+    View {
+        attr {
+            height(48f)
+            flexDirectionRow()
+            alignItemsCenter()
+            justifyContentCenter()
+            backgroundColor(theme.rowBackground)
+        }
+
+        if (showTotal && totalItems > 0) {
+            Text {
+                attr {
+                    fontSize(12f)
+                    color(Color(0xFF999999L))
+                    text("共 $totalItems 条")
+                    marginRight(10f)
+                }
+            }
+        }
+
+        // Previous button
+        val hasPrev = currentPage > 1
+        View {
+            attr {
+                width(30f)
+                height(30f)
+                borderRadius(4f)
+                justifyContentCenter()
+                alignItemsCenter()
+                marginRight(4f)
+                backgroundColor(if (hasPrev) theme.rowBackground else theme.alternateRowBackground)
+            }
+            if (hasPrev) event { click { onPageChange(currentPage - 1) } }
+            Text {
+                attr {
+                    fontSize(16f)
+                    color(if (hasPrev) theme.headerBackground else Color(0xFFBBBBBBL))
+                    text("‹")
+                }
+            }
+        }
+
+        // Page number buttons (up to 5 around current page)
+        val windowStart = maxOf(1, minOf(currentPage - 2, totalPages - 4))
+        val windowEnd = minOf(totalPages, windowStart + 4)
+        for (page in windowStart..windowEnd) {
+            val isActive = page == currentPage
+            View {
+                attr {
+                    width(30f)
+                    height(30f)
+                    borderRadius(4f)
+                    justifyContentCenter()
+                    alignItemsCenter()
+                    marginRight(4f)
+                    backgroundColor(if (isActive) theme.headerBackground else theme.rowBackground)
+                }
+                if (!isActive) event { click { onPageChange(page) } }
+                Text {
+                    attr {
+                        fontSize(13f)
+                        color(if (isActive) theme.headerTextColor else Color(0xFF333333L))
+                        text("$page")
+                    }
+                }
+            }
+        }
+
+        // Next button
+        val hasNext = currentPage < totalPages
+        View {
+            attr {
+                width(30f)
+                height(30f)
+                borderRadius(4f)
+                justifyContentCenter()
+                alignItemsCenter()
+                backgroundColor(if (hasNext) theme.rowBackground else theme.alternateRowBackground)
+            }
+            if (hasNext) event { click { onPageChange(currentPage + 1) } }
+            Text {
+                attr {
+                    fontSize(16f)
+                    color(if (hasNext) theme.headerBackground else Color(0xFFBBBBBBL))
+                    text("›")
+                }
+            }
+        }
+    }
+}
