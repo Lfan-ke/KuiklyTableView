@@ -22,7 +22,10 @@ import com.tencent.kuikly.core.base.BoxShadow
 import com.tencent.kuikly.core.base.Color
 import com.tencent.kuikly.core.base.ColorStop
 import com.tencent.kuikly.core.base.Direction
+import com.tencent.kuikly.core.base.Rotate
 import com.tencent.kuikly.core.base.ViewContainer
+import com.tencent.kuikly.core.views.Input
+import com.tencent.kuikly.core.views.Scroller
 import com.tencent.kuikly.core.views.Text
 import com.tencent.kuikly.core.views.View
 
@@ -200,10 +203,11 @@ fun ViewContainer<*, *>.ThemedTableRow(
 }
 
 /**
- * Header cell with an optional sort indicator (▲ / ▼).
+ * Header cell with an animated sort indicator.
  *
- * Tapping the cell calls [onSortClick]; the caller manages [SortOrder] state
- * and triggers a rebuild to update the indicator.
+ * The ↑ arrow rotates 180° for DESC via [Rotate] + [Animation.easeInOut],
+ * and fades out when [sortOrder] is [SortOrder.NONE].
+ * Tapping cycles NONE → ASC → DESC → NONE via [onSortClick].
  */
 fun ViewContainer<*, *>.SortableHeaderCell(
     text: String,
@@ -219,31 +223,33 @@ fun ViewContainer<*, *>.SortableHeaderCell(
             paddingLeft(theme.cellPaddingHorizontal)
             paddingRight(8f)
         }
-        event {
-            click { onSortClick() }
-        }
+        event { click { onSortClick() } }
         Text {
             attr {
                 fontSize(14f)
                 color(theme.headerTextColor)
-                fontWeight700()
+                fontWeightMedium()
                 text(text)
                 flex(1f)
             }
         }
-        if (sortOrder != SortOrder.NONE) {
-            View {
+        val isActive = sortOrder != SortOrder.NONE
+        val isDesc = sortOrder == SortOrder.DESC
+        View {
+            attr {
+                size(16f, 16f)
+                justifyContentCenter()
+                alignItemsCenter()
+                opacity(if (isActive) 1f else 0.3f)
+                transform(rotate = Rotate(if (isDesc) 180f else 0f, 0f, 0f))
+                animate(Animation.easeInOut(0.22f), isDesc)
+            }
+            Text {
                 attr {
-                    width(16f)
-                    justifyContentCenter()
-                    alignItemsCenter()
-                }
-                Text {
-                    attr {
-                        fontSize(10f)
-                        color(theme.headerTextColor)
-                        text(if (sortOrder == SortOrder.ASC) "▲" else "▼")
-                    }
+                    fontSize(11f)
+                    color(if (isActive) theme.headerTextColor else Color(0xFF999999L))
+                    fontWeightBold()
+                    text("↑")
                 }
             }
         }
@@ -329,11 +335,13 @@ fun ViewContainer<*, *>.PaginationBar(
                     alignItemsCenter()
                     marginRight(4f)
                     backgroundColor(if (isActive) theme.headerBackground else theme.rowBackground)
+                    animate(Animation.easeOut(0.18f), isActive)
                 }
                 if (!isActive) event { click { onPageChange(page) } }
                 Text {
                     attr {
                         fontSize(13f)
+                        fontWeightMedium()
                         color(if (isActive) theme.headerTextColor else Color(0xFF333333L))
                         text("$page")
                     }
@@ -358,6 +366,106 @@ fun ViewContainer<*, *>.PaginationBar(
                     fontSize(16f)
                     color(if (hasNext) theme.headerBackground else Color(0xFFBBBBBBL))
                     text("›")
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Search/filter bar above a [Table] - matches Ant Design / Arco Design / TDesign table
+ * filter patterns.
+ *
+ * Uses Kuikly's [Input] view for real text entry. The caller manages [query] state
+ * and handles [onQueryChange] to filter the data source, keeping this composable
+ * fully stateless.
+ *
+ * @param query Current search string (empty means no filter).
+ * @param theme Table theme for consistent colors.
+ * @param placeholder Hint text shown when query is empty.
+ * @param onQueryChange Called with the new query on each keystroke.
+ * @param onClear Called when the clear (×) button is tapped.
+ */
+fun ViewContainer<*, *>.TableSearchBar(
+    query: String,
+    theme: TableTheme = TableTheme.Default,
+    placeholder: String = "搜索…",
+    onQueryChange: (String) -> Unit = {},
+    onClear: () -> Unit = {},
+) {
+    View {
+        attr {
+            height(50f)
+            flexDirectionRow()
+            alignItemsCenter()
+            paddingLeft(12f)
+            paddingRight(12f)
+            paddingTop(6f)
+            paddingBottom(6f)
+            backgroundColor(theme.rowBackground)
+            boxShadow(BoxShadow(0f, 1f, 4f, Color(0x14000000)))
+        }
+        // Search field container
+        View {
+            attr {
+                flex(1f)
+                height(36f)
+                flexDirectionRow()
+                alignItemsCenter()
+                backgroundColor(Color(0xFFF5F5F5L))
+                borderRadius(10f)
+                paddingLeft(10f)
+                paddingRight(10f)
+                border(Border(1f, BorderStyle.SOLID,
+                    if (query.isNotEmpty()) theme.headerBackground else Color(0xFFE0E0E0L)))
+                animate(Animation.easeOut(0.2f), query.isNotEmpty())
+            }
+            // Magnifier icon
+            Text {
+                attr {
+                    fontSize(13f)
+                    color(Color(0xFF999999L))
+                    text("🔍")
+                    marginRight(6f)
+                }
+            }
+            // Real Input field for text entry
+            Input {
+                attr {
+                    flex(1f)
+                    fontSize(14f)
+                    color(Color(0xFF212121L))
+                    placeholderColor(Color(0xFFBBBBBBL))
+                    placeholder(placeholder)
+                    text(query)
+                    backgroundColor(Color(0x00000000))
+                }
+                event {
+                    textDidChange(isSyncEdit = true) { params ->
+                        onQueryChange(params.text)
+                    }
+                }
+            }
+        }
+        // Clear button - shown only when query is non-empty
+        if (query.isNotEmpty()) {
+            View {
+                attr {
+                    size(28f, 28f)
+                    marginLeft(8f)
+                    borderRadius(14f)
+                    backgroundColor(Color(0xFFDDDDDDL))
+                    allCenter()
+                    animate(Animation.easeInOut(0.15f), query.isNotEmpty())
+                }
+                event { click { onClear() } }
+                Text {
+                    attr {
+                        fontSize(16f)
+                        color(Color(0xFF666666L))
+                        fontWeightBold()
+                        text("×")
+                    }
                 }
             }
         }
@@ -617,6 +725,125 @@ fun ViewContainer<*, *>.TableBatchActionBar(
                         color(Color(0xFFFFFFFFL))
                         text(label)
                     }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Fixed-header table: header stays pinned at top while body rows scroll.
+ *
+ * Mirrors Element Plus Table's `height` prop and Ant Design's `sticky` header -
+ * the header row sits outside the scroller so it never scrolls away.
+ *
+ * @param height Total height of the component (header + scrollable body).
+ * @param theme Visual theme.
+ * @param headerContent Cell content for the fixed header row.
+ * @param bodyContent Data rows to place inside the scrollable body.
+ */
+fun ViewContainer<*, *>.StickyTable(
+    height: Float = 240f,
+    theme: TableTheme = TableTheme.Default,
+    headerContent: TableRowView.() -> Unit,
+    bodyContent: ViewContainer<*, *>.() -> Unit,
+) {
+    View {
+        attr {
+            flexDirectionColumn()
+            height(height)
+        }
+        TableRow {
+            attr {
+                rowHeight(theme.headerRowHeight)
+                backgroundColor(theme.headerBackground)
+                flexDirectionRow()
+                zIndex(10)
+                boxShadow(BoxShadow(0f, 2f, 6f, Color(red255 = 0, green255 = 0, blue255 = 0, alpha01 = 0.12f)))
+            }
+            headerContent()
+        }
+        Scroller {
+            attr {
+                flex(1f)
+                flexDirectionColumn()
+            }
+            bodyContent()
+        }
+    }
+}
+
+/**
+ * Table with a frozen (pinned) first column and horizontally scrollable remaining columns.
+ *
+ * Matches Ant Design/Element Plus `fixed: 'left'` column and TDesign `fixedLeftColumn` behavior.
+ * The frozen column casts a subtle right-side shadow to signal the scroll boundary.
+ *
+ * @param rowCount Number of data rows (used to render frozen cells in sync).
+ * @param rowHeight Height per data row.
+ * @param frozenWidth Width of the frozen left column.
+ * @param theme Visual theme.
+ * @param frozenHeaderContent Content for the frozen header cell.
+ * @param frozenRowContent Returns content for the frozen cell at each row index.
+ * @param scrollHeaderContent Header cells for the scrollable columns.
+ * @param scrollRowContent Returns row content for each data row index.
+ */
+fun ViewContainer<*, *>.FrozenColumnTable(
+    rowCount: Int,
+    rowHeight: Float = 48f,
+    frozenWidth: Float = 80f,
+    theme: TableTheme = TableTheme.Default,
+    frozenHeaderContent: TableCellView.() -> Unit,
+    frozenRowContent: (Int) -> (TableCellView.() -> Unit),
+    scrollHeaderContent: TableRowView.() -> Unit,
+    scrollRowContent: (Int) -> (TableRowView.() -> Unit),
+) {
+    View {
+        attr { flexDirectionRow() }
+
+        // Frozen left column - shadow signals scroll boundary
+        View {
+            attr {
+                width(frozenWidth)
+                flexDirectionColumn()
+                zIndex(5)
+                boxShadow(BoxShadow(2f, 0f, 6f, Color(red255 = 0, green255 = 0, blue255 = 0, alpha01 = 0.08f)))
+            }
+            TableRow {
+                attr {
+                    rowHeight(theme.headerRowHeight)
+                    backgroundColor(theme.headerBackground)
+                }
+                TableCell { frozenHeaderContent() }
+            }
+            repeat(rowCount) { idx ->
+                TableRow {
+                    attr {
+                        rowHeight(rowHeight)
+                        backgroundColor(if (idx % 2 == 0) theme.rowBackground else theme.alternateRowBackground)
+                    }
+                    TableCell { frozenRowContent(idx)() }
+                }
+            }
+        }
+
+        // Horizontally scrollable columns
+        HTable {
+            attr { flex(1f) }
+            TableRow {
+                attr {
+                    rowHeight(theme.headerRowHeight)
+                    backgroundColor(theme.headerBackground)
+                }
+                scrollHeaderContent()
+            }
+            repeat(rowCount) { idx ->
+                TableRow {
+                    attr {
+                        rowHeight(rowHeight)
+                        backgroundColor(if (idx % 2 == 0) theme.rowBackground else theme.alternateRowBackground)
+                    }
+                    scrollRowContent(idx)()
                 }
             }
         }

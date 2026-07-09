@@ -26,6 +26,9 @@ import com.tencent.kuiklybase.table.TableGroupCell
 import com.tencent.kuiklybase.table.ExpandableTableRow
 import com.tencent.kuiklybase.table.CheckboxTableRow
 import com.tencent.kuiklybase.table.TableBatchActionBar
+import com.tencent.kuiklybase.table.FrozenColumnTable
+import com.tencent.kuiklybase.table.StickyTable
+import com.tencent.kuiklybase.table.TableSearchBar
 import com.kuikly.kuiklytable.base.BasePager
 
 private data class TableItem(val name: String, val score: Int, val grade: String)
@@ -42,6 +45,9 @@ internal class TableViewDemoPage : BasePager() {
     private val pageSize = 3
     private var expandedRows by observable(setOf<Int>())
     private var selectedItems by observable(setOf<String>())
+    private var searchQuery by observable("")
+    private var searchSortOrder by observable(SortOrder.DESC)
+    private var searchSortKey by observable("score")
 
     private val themes = listOf(TableTheme.Default, TableTheme.AntBlue, TableTheme.Teal, TableTheme.Dark)
     private val themeNames = listOf("Default", "Ant Blue", "Teal", "Dark")
@@ -345,6 +351,9 @@ internal class TableViewDemoPage : BasePager() {
 
             // Multi-select checkbox section
             ctx.addCheckboxSection(this)
+
+            // Search + sort section
+            ctx.addSearchSortSection(this)
         }
     }
 
@@ -700,6 +709,136 @@ internal class TableViewDemoPage : BasePager() {
 
             // Bottom padding
             View { attr { height(32f) } }
+        }
+    }
+
+    private fun addSearchSortSection(container: ViewContainer<*, *>) {
+        val ctx = this
+        container.apply {
+            View {
+                attr {
+                    height(40f)
+                    backgroundColor(Color(0xFFF7F7F7L))
+                    justifyContentCenter()
+                    paddingLeft(16f)
+                    marginTop(12f)
+                }
+                Text {
+                    attr {
+                        fontSize(14f)
+                        color(Color(0xFF1A1A1AL))
+                        fontWeight700()
+                        text("搜索 + 排序 - TableSearchBar")
+                    }
+                }
+            }
+
+            // Live search bar
+            TableSearchBar(
+                query = ctx.searchQuery,
+                theme = ctx.themes[ctx.activeThemeIndex],
+                placeholder = "搜索姓名…",
+                onQueryChange = { ctx.searchQuery = it },
+                onClear = { ctx.searchQuery = "" },
+            )
+
+            // Filtered + sorted data
+            val filtered = ctx.rawItems.filter {
+                ctx.searchQuery.isEmpty() || it.name.contains(ctx.searchQuery, ignoreCase = true)
+            }
+            val sorted = when {
+                ctx.searchSortKey == "name" && ctx.searchSortOrder == SortOrder.ASC -> filtered.sortedBy { it.name }
+                ctx.searchSortKey == "name" && ctx.searchSortOrder == SortOrder.DESC -> filtered.sortedByDescending { it.name }
+                ctx.searchSortKey == "score" && ctx.searchSortOrder == SortOrder.ASC -> filtered.sortedBy { it.score }
+                ctx.searchSortKey == "score" && ctx.searchSortOrder == SortOrder.DESC -> filtered.sortedByDescending { it.score }
+                ctx.searchSortKey == "grade" && ctx.searchSortOrder == SortOrder.ASC -> filtered.sortedBy { it.grade }
+                ctx.searchSortKey == "grade" && ctx.searchSortOrder == SortOrder.DESC -> filtered.sortedByDescending { it.grade }
+                else -> filtered
+            }
+
+            val theme = ctx.themes[ctx.activeThemeIndex]
+            Table {
+                attr {
+                    height(280f)
+                    theme(theme)
+                }
+                ThemedHeaderRow(theme = theme) {
+                    SortableHeaderCell(
+                        text = "Name",
+                        sortOrder = if (ctx.searchSortKey == "name") ctx.searchSortOrder else SortOrder.NONE,
+                        theme = theme,
+                        onSortClick = {
+                            val next = if (ctx.searchSortKey == "name") when (ctx.searchSortOrder) {
+                                SortOrder.NONE, SortOrder.DESC -> SortOrder.ASC
+                                SortOrder.ASC -> SortOrder.DESC
+                            } else SortOrder.ASC
+                            ctx.searchSortKey = "name"
+                            ctx.searchSortOrder = next
+                        }
+                    ) { attr { flex(2f) } }
+                    SortableHeaderCell(
+                        text = "Score",
+                        sortOrder = if (ctx.searchSortKey == "score") ctx.searchSortOrder else SortOrder.NONE,
+                        theme = theme,
+                        onSortClick = {
+                            val next = if (ctx.searchSortKey == "score") when (ctx.searchSortOrder) {
+                                SortOrder.NONE, SortOrder.DESC -> SortOrder.ASC
+                                SortOrder.ASC -> SortOrder.DESC
+                            } else SortOrder.ASC
+                            ctx.searchSortKey = "score"
+                            ctx.searchSortOrder = next
+                        }
+                    ) { attr { flex(1f) } }
+                    SortableHeaderCell(
+                        text = "Grade",
+                        sortOrder = if (ctx.searchSortKey == "grade") ctx.searchSortOrder else SortOrder.NONE,
+                        theme = theme,
+                        onSortClick = {
+                            val next = if (ctx.searchSortKey == "grade") when (ctx.searchSortOrder) {
+                                SortOrder.NONE, SortOrder.DESC -> SortOrder.ASC
+                                SortOrder.ASC -> SortOrder.DESC
+                            } else SortOrder.ASC
+                            ctx.searchSortKey = "grade"
+                            ctx.searchSortOrder = next
+                        }
+                    ) { attr { flex(1f) } }
+                }
+                if (sorted.isEmpty()) {
+                    TableEmptyView(theme = theme, message = if (ctx.searchQuery.isEmpty()) "暂无数据" else "无匹配结果 \"${ctx.searchQuery}\"")
+                }
+                sorted.forEachIndexed { index, item ->
+                    ThemedTableRow(theme = theme, index = index) {
+                        TableCell {
+                            attr { flex(2f); justifyContentCenter(); paddingLeft(12f) }
+                            Text {
+                                attr { fontSize(14f); color(Color(0xFF212121L)); text(item.name) }
+                            }
+                        }
+                        TableCell {
+                            attr { flex(1f); justifyContentCenter(); alignItemsCenter() }
+                            Text {
+                                attr { fontSize(14f); color(Color(0xFF212121L)); text(item.score.toString()) }
+                            }
+                        }
+                        TableCell {
+                            attr { flex(1f); justifyContentCenter(); alignItemsCenter() }
+                            View {
+                                attr {
+                                    paddingLeft(6f); paddingRight(6f)
+                                    paddingTop(2f); paddingBottom(2f)
+                                    borderRadius(4f)
+                                    backgroundColor(ctx.gradeColor(item.grade))
+                                }
+                                Text {
+                                    attr { fontSize(12f); color(Color(0xFFFFFFFFL)); text(item.grade) }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            View { attr { height(40f) } }
         }
     }
 
