@@ -9,10 +9,15 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --sidebar-bg:#0d1117;
-  --sidebar-active:rgba(59,130,246,.18);
-  --sidebar-text:#8b949e;
-  --sidebar-active-text:#f0f6ff;
+  --sidebar-bg:#f8fafc;
+  --sidebar-text:#475569;
+  --sidebar-active:rgba(59,130,246,.12);
+  --sidebar-active-text:#1d4ed8;
+  --sidebar-hover-bg:rgba(0,0,0,.04);
+  --sidebar-input-bg:rgba(0,0,0,.04);
+  --sidebar-border:var(--border);
+  --sidebar-scrollbar:#cbd5e1;
+  --sidebar-dim:#94a3b8;
   --accent:#3b82f6;
   --accent-rgb:59,130,246;
   --header-grad:linear-gradient(135deg,#0369a1 0%,#0ea5e9 40%,#3b82f6 70%,#6366f1 100%);
@@ -39,6 +44,15 @@
   --border:#334155;
   --text:#e2e8f0;
   --text-muted:#94a3b8;
+  --sidebar-bg:#0d1117;
+  --sidebar-text:#8b949e;
+  --sidebar-active:rgba(59,130,246,.18);
+  --sidebar-active-text:#f0f6ff;
+  --sidebar-hover-bg:rgba(255,255,255,.06);
+  --sidebar-input-bg:rgba(255,255,255,.06);
+  --sidebar-border:rgba(255,255,255,.05);
+  --sidebar-scrollbar:#21262d;
+  --sidebar-dim:#484f58;
 }
 [data-theme="dark"] .phone-screen{background:#1a1f2c}
 [data-theme="dark"] .phone-table th{background:#1e2d40;color:#e2e8f0;border-bottom-color:#374151}
@@ -61,9 +75,9 @@ body{font-family:'HarmonyOS Sans SC','HarmonyOS Sans','鸿蒙黑体','Microsoft 
 .top-bar .logo-name{font-size:17px;font-weight:700;letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .top-bar .logo span{font-size:10px;font-weight:400;opacity:.7;letter-spacing:.3px}
 .top-bar-actions{display:flex;align-items:center;gap:8px}
-.btn-icon{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;display:flex;align-items:center;gap:5px;text-decoration:none;transition:all .2s;backdrop-filter:blur(4px);font-family:inherit}
-.btn-icon:hover{background:rgba(255,255,255,.22);transform:translateY(-1px)}
-.btn-icon svg{width:15px;height:15px;fill:currentColor}
+.btn-icon{width:36px;height:36px;background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:var(--radius-sm);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:all .2s;font-family:inherit}
+.btn-icon:hover{background:rgba(255,255,255,.28);transform:translateY(-1px)}
+.btn-icon svg{width:18px;height:18px;fill:currentColor}
 
 /* LAYOUT */
 .layout{display:flex;margin-top:var(--header-h);min-height:calc(100vh - var(--header-h))}
@@ -75,21 +89,21 @@ body{font-family:'HarmonyOS Sans SC','HarmonyOS Sans','鸿蒙黑体','Microsoft 
   position:fixed;top:var(--header-h);left:0;bottom:0;
   overflow-y:auto;z-index:50;
   display:flex;flex-direction:column;
-  border-right:1px solid rgba(255,255,255,.05);
+  border-right:1px solid var(--sidebar-border);
 }
 .sidebar::-webkit-scrollbar{width:4px}
-.sidebar::-webkit-scrollbar-thumb{background:#21262d;border-radius:2px}
-.sidebar-search{padding:10px 12px;position:sticky;top:0;background:var(--sidebar-bg);z-index:1;border-bottom:1px solid rgba(255,255,255,.04)}
+.sidebar::-webkit-scrollbar-thumb{background:var(--sidebar-scrollbar);border-radius:2px}
+.sidebar-search{padding:10px 12px;position:sticky;top:0;background:var(--sidebar-bg);z-index:1;border-bottom:1px solid var(--sidebar-border)}
 .sidebar-search input{
-  width:100%;padding:7px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.08);
-  background:rgba(255,255,255,.06);color:#c9d1d9;font-size:12px;outline:none;font-family:inherit;transition:border-color .2s
+  width:100%;padding:7px 10px;border-radius:8px;border:1px solid var(--border);
+  background:var(--sidebar-input-bg);color:var(--text);font-size:12px;outline:none;font-family:inherit;transition:border-color .2s
 }
-.sidebar-search input:focus{border-color:rgba(59,130,246,.5);background:rgba(255,255,255,.1)}
-.sidebar-search input::placeholder{color:#484f58}
+.sidebar-search input:focus{border-color:rgba(59,130,246,.5)}
+.sidebar-search input::placeholder{color:var(--sidebar-dim)}
 .sidebar-section{padding:4px 0}
 .sidebar-section-title{
   padding:10px 16px 4px;font-size:10px;font-weight:700;
-  color:#484f58;letter-spacing:1.2px;text-transform:uppercase;
+  color:var(--sidebar-dim);letter-spacing:1.2px;text-transform:uppercase;
 }
 .sidebar-item{
   display:block;padding:7px 16px;font-size:13px;color:var(--sidebar-text);
@@ -97,7 +111,7 @@ body{font-family:'HarmonyOS Sans SC','HarmonyOS Sans','鸿蒙黑体','Microsoft 
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   border-radius:0 6px 6px 0;margin-right:6px;
 }
-.sidebar-item:hover{color:#c9d1d9;background:rgba(255,255,255,.06);border-left-color:rgba(59,130,246,.4)}
+.sidebar-item:hover{color:var(--sidebar-active-text);background:var(--sidebar-hover-bg);border-left-color:rgba(59,130,246,.4)}
 .sidebar-item.active{color:var(--sidebar-active-text);background:var(--sidebar-active);border-left-color:var(--accent);font-weight:500}
 
 /* MAIN */
@@ -354,13 +368,12 @@ details.code-toggle[open] summary::before{transform:rotate(90deg)}
     </div>
   </div>
   <div class="top-bar-actions">
-    <a class="btn-icon" href="https://github.com/Lfan-ke/KuiklyTableView" target="_blank" rel="noopener">
+    <a class="btn-icon" href="https://github.com/Lfan-ke/KuiklyTableView" target="_blank" rel="noopener" title="GitHub">
       <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-      GitHub
     </a>
-    <button class="btn-icon" id="theme-toggle" onclick="toggleTheme()">
-      <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/></svg>
-      Dark
+    <button class="btn-icon" id="theme-toggle" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme">
+      <svg id="themeIconMoon" viewBox="0 0 24 24" fill="currentColor"><path d="M21.75 15.5a9 9 0 01-11.25-11.2A9 9 0 1021.75 15.5z"/></svg>
+      <svg id="themeIconSun" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M12 17a5 5 0 100-10 5 5 0 000 10zM12 1v3M12 20v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1 12h3M20 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
     </button>
   </div>
 </header>
@@ -1077,11 +1090,12 @@ function toggleTheme() {
   pageTheme = pageTheme === 'light' ? 'dark' : 'light';
   document.documentElement.setAttribute('data-theme', pageTheme === 'dark' ? 'dark' : '');
   try{localStorage.setItem('ktv-theme',pageTheme);}catch(e){}
-  const btn = document.getElementById('theme-toggle');
+  const moon = document.getElementById('themeIconMoon');
+  const sun = document.getElementById('themeIconSun');
   if (pageTheme === 'dark') {
-    btn.innerHTML = '<svg viewBox="0 0 20 20" style="width:16px;height:16px;fill:currentColor"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg> Dark';
+    moon.style.display = 'none'; sun.style.display = '';
   } else {
-    btn.innerHTML = '<svg viewBox="0 0 20 20" style="width:16px;height:16px;fill:currentColor"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/></svg> Light';
+    moon.style.display = ''; sun.style.display = 'none';
   }
   renderAll();
 }
@@ -1984,6 +1998,11 @@ function cancelEdit() {
 // ===================== INIT =====================
 function initAll() {
   buildSidebar();
+  if (pageTheme === 'dark') {
+    const m = document.getElementById('themeIconMoon'), s = document.getElementById('themeIconSun');
+    if (m) m.style.display = 'none';
+    if (s) s.style.display = '';
+  }
   renderBasicTable();
   renderHTable();
   renderRowCellTable();
