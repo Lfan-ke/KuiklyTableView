@@ -707,6 +707,208 @@ internal class TableViewDemoPage : BasePager() {
                 }
             }
 
+            // Section: sticky header table
+            View {
+                attr {
+                    height(36f)
+                    backgroundColor(Color(0xFFEEEEEEL))
+                    justifyContentCenter()
+                    paddingLeft(16f)
+                    marginTop(8f)
+                }
+                Text {
+                    attr {
+                        fontSize(13f)
+                        color(Color(0xFF555555L))
+                        text("粘性表头 StickyTable")
+                    }
+                }
+            }
+            StickyTable(
+                height = 240f,
+                theme = ctx.themes[ctx.activeThemeIndex],
+                headerContent = {
+                    TableCell {
+                        attr { flex(2f); justifyContentCenter(); paddingLeft(12f) }
+                        Text {
+                            attr {
+                                fontSize(14f)
+                                color(ctx.themes[ctx.activeThemeIndex].headerTextColor)
+                                fontWeight700()
+                                text("Name")
+                            }
+                        }
+                    }
+                    TableCell {
+                        attr { flex(1f); justifyContentCenter(); alignItemsCenter() }
+                        Text {
+                            attr {
+                                fontSize(14f)
+                                color(ctx.themes[ctx.activeThemeIndex].headerTextColor)
+                                fontWeight700()
+                                text("Score")
+                            }
+                        }
+                    }
+                    TableCell {
+                        attr { flex(1f); justifyContentCenter(); alignItemsCenter() }
+                        Text {
+                            attr {
+                                fontSize(14f)
+                                color(ctx.themes[ctx.activeThemeIndex].headerTextColor)
+                                fontWeight700()
+                                text("Grade")
+                            }
+                        }
+                    }
+                },
+                bodyContent = {
+                    ctx.rawItems.forEachIndexed { idx, item ->
+                        ThemedTableRow(theme = ctx.themes[ctx.activeThemeIndex], index = idx) {
+                            TableCell {
+                                attr { flex(2f); justifyContentCenter(); paddingLeft(12f) }
+                                Text { attr { fontSize(14f); color(Color(0xFF212121L)); text(item.name) } }
+                            }
+                            TableCell {
+                                attr { flex(1f); justifyContentCenter(); alignItemsCenter() }
+                                Text { attr { fontSize(14f); color(Color(0xFF212121L)); text(item.score.toString()) } }
+                            }
+                            TableCell {
+                                attr { flex(1f); justifyContentCenter(); alignItemsCenter() }
+                                View {
+                                    attr {
+                                        paddingLeft(6f); paddingRight(6f)
+                                        paddingTop(2f); paddingBottom(2f)
+                                        borderRadius(4f)
+                                        backgroundColor(ctx.gradeColor(item.grade))
+                                    }
+                                    Text { attr { fontSize(12f); color(Color(0xFFFFFFFFL)); text(item.grade) } }
+                                }
+                            }
+                        }
+                    }
+                }
+            )
+
+            // Section: frozen first column table
+            View {
+                attr {
+                    height(36f)
+                    backgroundColor(Color(0xFFEEEEEEL))
+                    justifyContentCenter()
+                    paddingLeft(16f)
+                    marginTop(8f)
+                }
+                Text {
+                    attr {
+                        fontSize(13f)
+                        color(Color(0xFF555555L))
+                        text("首列冻结 FrozenColumnTable")
+                    }
+                }
+            }
+            FrozenColumnTable(
+                rowCount = ctx.wideItems.size,
+                rowHeight = 48f,
+                frozenWidth = 70f,
+                theme = ctx.themes[ctx.activeThemeIndex],
+                frozenHeaderContent = {
+                    Text {
+                        attr {
+                            fontSize(14f)
+                            color(ctx.themes[ctx.activeThemeIndex].headerTextColor)
+                            fontWeight700()
+                            text("Name")
+                        }
+                    }
+                },
+                frozenRowContent = { idx ->
+                    {
+                        Text {
+                            attr {
+                                fontSize(13f)
+                                color(Color(0xFF212121L))
+                                text(ctx.wideItems[idx].name)
+                            }
+                        }
+                    }
+                },
+                scrollHeaderContent = {
+                    TableCell {
+                        attr { width(100f); justifyContentCenter(); paddingLeft(8f) }
+                        Text {
+                            attr {
+                                fontSize(14f)
+                                color(ctx.themes[ctx.activeThemeIndex].headerTextColor)
+                                fontWeight700()
+                                text("Dept")
+                            }
+                        }
+                    }
+                    TableCell {
+                        attr { width(70f); justifyContentCenter(); alignItemsCenter() }
+                        Text {
+                            attr {
+                                fontSize(14f)
+                                color(ctx.themes[ctx.activeThemeIndex].headerTextColor)
+                                fontWeight700()
+                                text("Score")
+                            }
+                        }
+                    }
+                    TableCell {
+                        attr { width(60f); justifyContentCenter(); alignItemsCenter() }
+                        Text {
+                            attr {
+                                fontSize(14f)
+                                color(ctx.themes[ctx.activeThemeIndex].headerTextColor)
+                                fontWeight700()
+                                text("Grade")
+                            }
+                        }
+                    }
+                    TableCell {
+                        attr { width(130f); justifyContentCenter(); paddingLeft(8f) }
+                        Text {
+                            attr {
+                                fontSize(14f)
+                                color(ctx.themes[ctx.activeThemeIndex].headerTextColor)
+                                fontWeight700()
+                                text("Note")
+                            }
+                        }
+                    }
+                },
+                scrollRowContent = { idx ->
+                    {
+                        TableCell {
+                            attr { width(100f); justifyContentCenter(); paddingLeft(8f) }
+                            Text { attr { fontSize(13f); color(Color(0xFF212121L)); text(ctx.wideItems[idx].dept) } }
+                        }
+                        TableCell {
+                            attr { width(70f); justifyContentCenter(); alignItemsCenter() }
+                            Text { attr { fontSize(13f); color(Color(0xFF212121L)); text(ctx.wideItems[idx].score) } }
+                        }
+                        TableCell {
+                            attr { width(60f); justifyContentCenter(); alignItemsCenter() }
+                            View {
+                                attr {
+                                    paddingLeft(6f); paddingRight(6f)
+                                    paddingTop(2f); paddingBottom(2f)
+                                    borderRadius(4f)
+                                    backgroundColor(ctx.gradeColor(ctx.wideItems[idx].grade))
+                                }
+                                Text { attr { fontSize(11f); color(Color(0xFFFFFFFFL)); text(ctx.wideItems[idx].grade) } }
+                            }
+                        }
+                        TableCell {
+                            attr { width(130f); justifyContentCenter(); paddingLeft(8f) }
+                            Text { attr { fontSize(13f); color(Color(0xFF757575L)); text(ctx.wideItems[idx].note) } }
+                        }
+                    }
+                }
+            )
+
             // Bottom padding
             View { attr { height(32f) } }
         }
