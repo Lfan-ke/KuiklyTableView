@@ -29,6 +29,8 @@ import com.tencent.kuiklybase.table.TableBatchActionBar
 import com.tencent.kuiklybase.table.FrozenColumnTable
 import com.tencent.kuiklybase.table.StickyTable
 import com.tencent.kuiklybase.table.TableSearchBar
+import com.tencent.kuiklybase.table.SwipeAction
+import com.tencent.kuiklybase.table.SwipeableTableRow
 import com.kuikly.kuiklytable.base.BasePager
 
 private data class TableItem(val name: String, val score: Int, val grade: String)
@@ -354,6 +356,9 @@ internal class TableViewDemoPage : BasePager() {
 
             // Search + sort section
             ctx.addSearchSortSection(this)
+
+            // Swipeable rows section
+            ctx.addSwipeableSection(this)
         }
     }
 
@@ -1035,6 +1040,198 @@ internal class TableViewDemoPage : BasePager() {
                                     attr { fontSize(12f); color(Color(0xFFFFFFFFL)); text(item.grade) }
                                 }
                             }
+                        }
+                    }
+                }
+            }
+
+            View { attr { height(40f) } }
+        }
+    }
+
+    private fun addSwipeableSection(container: ViewContainer<*, *>) {
+        val ctx = this
+        container.apply {
+            View {
+                attr {
+                    height(40f)
+                    backgroundColor(Color(0xFFF7F7F7L))
+                    justifyContentCenter()
+                    paddingLeft(16f)
+                    marginTop(12f)
+                }
+                Text {
+                    attr {
+                        fontSize(14f)
+                        color(Color(0xFF1A1A1AL))
+                        fontWeight700()
+                        text("左划显示操作 - SwipeableTableRow")
+                    }
+                }
+            }
+
+            Table {
+                attr {
+                    height(280f)
+                    theme(ctx.themes[ctx.activeThemeIndex])
+                }
+
+                // Row 1: right actions only - Delete + Archive
+                SwipeableTableRow {
+                    attr {
+                        rowHeight(56f)
+                        theme(ctx.themes[ctx.activeThemeIndex])
+                        rightActions(
+                            SwipeAction("删除", Color(0xFFF44336L), icon = "🗑"),
+                            SwipeAction("归档", Color(0xFF2196F3L), icon = "📦"),
+                        )
+                        content {
+                            View {
+                                attr {
+                                    flex(1f)
+                                    flexDirectionRow()
+                                    alignItemsCenter()
+                                    paddingLeft(16f)
+                                    paddingRight(16f)
+                                }
+                                Text {
+                                    attr {
+                                        fontSize(15f)
+                                        color(Color(0xFF212121L))
+                                        flex(1f)
+                                        text("← 向左滑动查看操作")
+                                    }
+                                }
+                                Text {
+                                    attr {
+                                        fontSize(12f)
+                                        color(Color(0xFFAAAAAAL))
+                                        text("删除 / 归档")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    event {
+                        onAction { side, index ->
+                            KLog.i("SwipeDemo", "action: $side[$index]")
+                        }
+                    }
+                }
+
+                // Row 2: left + right actions - Star (left), Delete + More (right)
+                SwipeableTableRow {
+                    attr {
+                        rowHeight(56f)
+                        theme(ctx.themes[ctx.activeThemeIndex])
+                        leftActions(
+                            SwipeAction("收藏", Color(0xFFFFC107L), icon = "⭐"),
+                        )
+                        rightActions(
+                            SwipeAction("删除", Color(0xFFF44336L), icon = "🗑"),
+                            SwipeAction("更多", Color(0xFF9E9E9EL), icon = "···"),
+                        )
+                        content {
+                            View {
+                                attr {
+                                    flex(1f)
+                                    flexDirectionRow()
+                                    alignItemsCenter()
+                                    paddingLeft(16f)
+                                    paddingRight(16f)
+                                }
+                                Text {
+                                    attr {
+                                        fontSize(15f)
+                                        color(Color(0xFF212121L))
+                                        flex(1f)
+                                        text("← 左右均可滑动 →")
+                                    }
+                                }
+                                Text {
+                                    attr {
+                                        fontSize(12f)
+                                        color(Color(0xFFAAAAAAL))
+                                        text("收藏 / 删除 / 更多")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    event {
+                        onAction { side, index ->
+                            KLog.i("SwipeDemo", "action: $side[$index]")
+                        }
+                    }
+                }
+
+                // Row 3: right actions with wide buttons
+                SwipeableTableRow {
+                    attr {
+                        rowHeight(56f)
+                        theme(ctx.themes[ctx.activeThemeIndex])
+                        rightActions(
+                            SwipeAction("标记已读", Color(0xFF4CAF50L), width = 90f),
+                        )
+                        content {
+                            View {
+                                attr {
+                                    flex(1f)
+                                    flexDirectionRow()
+                                    alignItemsCenter()
+                                    paddingLeft(16f)
+                                    paddingRight(16f)
+                                }
+                                Text {
+                                    attr {
+                                        fontSize(15f)
+                                        color(Color(0xFF212121L))
+                                        flex(1f)
+                                        text("← 左划标记已读")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    event {
+                        onAction { side, index ->
+                            KLog.i("SwipeDemo", "action: $side[$index]")
+                        }
+                    }
+                }
+
+                // Row 4: right actions with wide buttons
+                SwipeableTableRow {
+                    attr {
+                        rowHeight(56f)
+                        theme(ctx.themes[ctx.activeThemeIndex])
+                        rightActions(
+                            SwipeAction("置顶", Color(0xFF7B1FA2L), icon = "↑", width = 64f),
+                            SwipeAction("删除", Color(0xFFF44336L), icon = "✕", width = 64f),
+                        )
+                        content {
+                            View {
+                                attr {
+                                    flex(1f)
+                                    flexDirectionRow()
+                                    alignItemsCenter()
+                                    paddingLeft(16f)
+                                    paddingRight(16f)
+                                }
+                                Text {
+                                    attr {
+                                        fontSize(15f)
+                                        color(Color(0xFF212121L))
+                                        flex(1f)
+                                        text("← 左划置顶或删除")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    event {
+                        onAction { side, index ->
+                            KLog.i("SwipeDemo", "action: $side[$index]")
                         }
                     }
                 }
