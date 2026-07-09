@@ -35,6 +35,8 @@ import com.tencent.kuiklybase.table.TreeTable
 import com.tencent.kuiklybase.table.TreeTableColumn
 import com.tencent.kuiklybase.table.TreeTableNode
 import com.tencent.kuiklybase.table.InfiniteTable
+import com.tencent.kuiklybase.table.EditableField
+import com.tencent.kuiklybase.table.EditableTableRow
 import com.tencent.kuikly.core.timer.setTimeout
 import com.kuikly.kuiklytable.base.BasePager
 
@@ -58,6 +60,12 @@ internal class TableViewDemoPage : BasePager() {
     private var infiniteItems by observable(listOf("Item 1", "Item 2", "Item 3", "Item 4", "Item 5"))
     private var infiniteLoading by observable(false)
     private var infiniteHasMore by observable(true)
+    private var editingRowIndex by observable(-1)
+    private var editableData by observable(listOf(
+        listOf("Alice", "Engineering", "A"),
+        listOf("Bob", "Design", "B+"),
+        listOf("Carol", "Product", "B"),
+    ))
 
     private val themes = listOf(TableTheme.Default, TableTheme.AntBlue, TableTheme.Teal, TableTheme.Dark)
     private val themeNames = listOf("Default", "Ant Blue", "Teal", "Dark")
@@ -373,6 +381,9 @@ internal class TableViewDemoPage : BasePager() {
 
             // Infinite scroll section
             ctx.addInfiniteSection(this)
+
+            // Editable table section
+            ctx.addEditableSection(this)
         }
     }
 
@@ -1341,6 +1352,128 @@ internal class TableViewDemoPage : BasePager() {
             }
 
             View { attr { height(40f) } }
+        }
+    }
+
+    private fun addEditableSection(container: ViewContainer<*, *>) {
+        val ctx = this
+        val theme = ctx.themes[ctx.activeThemeIndex]
+        container.apply {
+            View {
+                attr {
+                    height(40f)
+                    backgroundColor(Color(0xFFF7F7F7L))
+                    justifyContentCenter()
+                    paddingLeft(16f)
+                    marginTop(12f)
+                }
+                Text {
+                    attr {
+                        fontSize(14f)
+                        color(Color(0xFF1A1A1AL))
+                        fontWeight700()
+                        text("行内编辑 - EditableTableRow（点编辑按钮）")
+                    }
+                }
+            }
+
+            Table {
+                attr {
+                    height(260f)
+                    theme(theme)
+                }
+                // Header
+                ThemedHeaderRow(theme = theme) {
+                    TableCell {
+                        attr { flex(2f); justifyContentCenter(); paddingLeft(12f) }
+                        Text {
+                            attr {
+                                fontSize(14f); fontWeight700()
+                                color(theme.headerTextColor); text("Name")
+                            }
+                        }
+                    }
+                    TableCell {
+                        attr { flex(2f); justifyContentCenter(); paddingLeft(8f) }
+                        Text {
+                            attr {
+                                fontSize(14f); fontWeight700()
+                                color(theme.headerTextColor); text("Dept")
+                            }
+                        }
+                    }
+                    TableCell {
+                        attr { flex(1f); justifyContentCenter(); alignItemsCenter() }
+                        Text {
+                            attr {
+                                fontSize(14f); fontWeight700()
+                                color(theme.headerTextColor); text("Grade")
+                            }
+                        }
+                    }
+                    TableCell {
+                        attr { width(90f); justifyContentCenter(); alignItemsCenter() }
+                        Text {
+                            attr {
+                                fontSize(14f); fontWeight700()
+                                color(theme.headerTextColor); text("操作")
+                            }
+                        }
+                    }
+                }
+
+                ctx.editableData.forEachIndexed { rowIdx, row ->
+                    val isEditing = ctx.editingRowIndex == rowIdx
+                    EditableTableRow(
+                        fields = row.mapIndexed { colIdx, value ->
+                            EditableField(
+                                value = value,
+                                editable = true,
+                                placeholder = listOf("姓名", "部门", "等级")[colIdx],
+                                onChange = { newVal ->
+                                    val updated = ctx.editableData.toMutableList()
+                                    updated[rowIdx] = updated[rowIdx].toMutableList().also {
+                                        it[colIdx] = newVal
+                                    }
+                                    ctx.editableData = updated
+                                }
+                            )
+                        },
+                        editing = isEditing,
+                        theme = theme,
+                        index = rowIdx,
+                        actionContent = {
+                            View {
+                                attr {
+                                    height(28f)
+                                    paddingLeft(10f)
+                                    paddingRight(10f)
+                                    borderRadius(4f)
+                                    justifyContentCenter()
+                                    alignItemsCenter()
+                                    backgroundColor(
+                                        if (isEditing) Color(0xFF52C41AL) else Color(0xFF1677FFL)
+                                    )
+                                }
+                                event {
+                                    click {
+                                        ctx.editingRowIndex = if (isEditing) -1 else rowIdx
+                                    }
+                                }
+                                Text {
+                                    attr {
+                                        fontSize(12f)
+                                        color(Color(0xFFFFFFFFL))
+                                        text(if (isEditing) "保存" else "编辑")
+                                    }
+                                }
+                            }
+                        }
+                    )
+                }
+            }
+
+            View { attr { height(16f) } }
         }
     }
 

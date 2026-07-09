@@ -1395,3 +1395,107 @@ fun ViewContainer<*, *>.InfiniteTable(
         }
     }
 }
+
+// ---------------------------------------------------------------------------
+// EditableTableRow - inline cell editing (Ant Design editable table pattern)
+// ---------------------------------------------------------------------------
+
+/**
+ * A single editable field descriptor.
+ *
+ * @param value  Current display value
+ * @param editable  Whether this cell allows editing
+ * @param placeholder  Input placeholder when empty
+ * @param onChange  Called whenever the text changes
+ */
+data class EditableField(
+    val value: String,
+    val editable: Boolean = true,
+    val placeholder: String = "",
+    val onChange: ((String) -> Unit)? = null,
+)
+
+/**
+ * Table row where each cell is either a plain label or an [Input] field,
+ * toggled by [editing]. Matches Ant Design / Element Plus editable-table UX:
+ * display mode shows the value as text, edit mode reveals an inline input.
+ */
+fun ViewContainer<*, *>.EditableTableRow(
+    fields: List<EditableField>,
+    editing: Boolean,
+    theme: TableTheme = TableTheme.Default,
+    index: Int = 0,
+    actionContent: (ViewContainer<*, *>.() -> Unit)? = null,
+) {
+    TableRow {
+        attr {
+            rowHeight(if (editing) 52f else 44f)
+            flexDirectionRow()
+            backgroundColor(
+                if (editing) Color(0xFFFAFBFFL)
+                else if (index % 2 == 0) theme.rowBackground else theme.alternateRowBackground
+            )
+        }
+        fields.forEach { field ->
+            TableCell {
+                attr {
+                    flex(1f)
+                    justifyContentCenter()
+                    paddingLeft(8f)
+                    paddingRight(8f)
+                    paddingTop(4f)
+                    paddingBottom(4f)
+                }
+                if (editing && field.editable) {
+                    View {
+                        attr {
+                            flex(1f)
+                            height(36f)
+                            border(Border(1f, BorderStyle.SOLID, Color(0xFF1677FFL)))
+                            borderRadius(6f)
+                            paddingLeft(8f)
+                            paddingRight(8f)
+                            justifyContentCenter()
+                            backgroundColor(Color(0xFFFFFFFFL))
+                        }
+                        Input {
+                            attr {
+                                flex(1f)
+                                fontSize(14f)
+                                color(Color(0xFF212121L))
+                                value(field.value)
+                                placeholder(field.placeholder)
+                                placeholderColor(Color(0xFFBBBBBBL))
+                            }
+                            event {
+                                textChange { text -> field.onChange?.invoke(text) }
+                            }
+                        }
+                    }
+                } else {
+                    Text {
+                        attr {
+                            fontSize(14f)
+                            color(if (field.value.isEmpty()) Color(0xFFBBBBBBL) else Color(0xFF212121L))
+                            text(field.value.ifEmpty { field.placeholder })
+                            flex(1f)
+                        }
+                    }
+                }
+            }
+        }
+        if (actionContent != null) {
+            TableCell {
+                attr {
+                    width(90f)
+                    justifyContentCenter()
+                    alignItemsCenter()
+                    flexDirectionRow()
+                    paddingLeft(4f)
+                    paddingRight(4f)
+                }
+                actionContent()
+            }
+        }
+    }
+}
