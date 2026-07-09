@@ -31,6 +31,9 @@ import com.tencent.kuiklybase.table.StickyTable
 import com.tencent.kuiklybase.table.TableSearchBar
 import com.tencent.kuiklybase.table.SwipeAction
 import com.tencent.kuiklybase.table.SwipeableTableRow
+import com.tencent.kuiklybase.table.TreeTable
+import com.tencent.kuiklybase.table.TreeTableColumn
+import com.tencent.kuiklybase.table.TreeTableNode
 import com.kuikly.kuiklytable.base.BasePager
 
 private data class TableItem(val name: String, val score: Int, val grade: String)
@@ -359,6 +362,9 @@ internal class TableViewDemoPage : BasePager() {
 
             // Swipeable rows section
             ctx.addSwipeableSection(this)
+
+            // Tree table section
+            ctx.addTreeTableSection(this)
         }
     }
 
@@ -1233,6 +1239,95 @@ internal class TableViewDemoPage : BasePager() {
                         onAction { side, index ->
                             KLog.i("SwipeDemo", "action: $side[$index]")
                         }
+                    }
+                }
+            }
+
+            View { attr { height(40f) } }
+        }
+    }
+
+    private fun addTreeTableSection(container: ViewContainer<*, *>) {
+        val ctx = this
+        container.apply {
+            View {
+                attr {
+                    height(40f)
+                    backgroundColor(Color(0xFFF7F7F7L))
+                    justifyContentCenter()
+                    paddingLeft(16f)
+                    marginTop(12f)
+                }
+                Text {
+                    attr {
+                        fontSize(14f)
+                        color(Color(0xFF1A1A1AL))
+                        fontWeight700()
+                        text("树形表格 - TreeTable（点 ▸ 展开）")
+                    }
+                }
+            }
+
+            val orgTree = listOf(
+                TreeTableNode(
+                    id = "eng",
+                    cells = listOf("工程部", "技术", "部门"),
+                    children = listOf(
+                        TreeTableNode(
+                            id = "eng-fe",
+                            cells = listOf("前端组", "Web/移动", "团队"),
+                            children = listOf(
+                                TreeTableNode(id = "eng-fe-1", cells = listOf("Alice", "前端", "Senior")),
+                                TreeTableNode(id = "eng-fe-2", cells = listOf("Bob", "前端", "Engineer")),
+                            )
+                        ),
+                        TreeTableNode(
+                            id = "eng-be",
+                            cells = listOf("后端组", "服务器", "团队"),
+                            children = listOf(
+                                TreeTableNode(id = "eng-be-1", cells = listOf("Carol", "后端", "Tech Lead")),
+                                TreeTableNode(id = "eng-be-2", cells = listOf("Dave", "后端", "Senior")),
+                                TreeTableNode(id = "eng-be-3", cells = listOf("Eve", "后端", "Engineer")),
+                            )
+                        ),
+                    )
+                ),
+                TreeTableNode(
+                    id = "product",
+                    cells = listOf("产品部", "产品", "部门"),
+                    children = listOf(
+                        TreeTableNode(id = "product-1", cells = listOf("Frank", "产品", "PM")),
+                        TreeTableNode(id = "product-2", cells = listOf("Grace", "产品", "PM")),
+                    )
+                ),
+                TreeTableNode(
+                    id = "design",
+                    cells = listOf("设计部", "UX/UI", "部门"),
+                    children = listOf(
+                        TreeTableNode(id = "design-1", cells = listOf("Henry", "UI", "Designer")),
+                    )
+                ),
+            )
+
+            TreeTable {
+                attr {
+                    theme(ctx.themes[ctx.activeThemeIndex])
+                    columns(
+                        TreeTableColumn(header = "名称", flex = 2f, align = "left"),
+                        TreeTableColumn(header = "方向", flex = 1.5f, align = "left"),
+                        TreeTableColumn(header = "职级", flex = 1f, align = "center"),
+                    )
+                    nodes(orgTree)
+                    rowHeight(44f)
+                    indentWidth(18f)
+                    defaultExpandAll(false)
+                }
+                event {
+                    onRowClick { node, depth ->
+                        KLog.i("TreeTableDemo", "click depth=$depth id=${node.id}")
+                    }
+                    onExpandChange { id, expanded ->
+                        KLog.i("TreeTableDemo", "$id expanded=$expanded")
                     }
                 }
             }
