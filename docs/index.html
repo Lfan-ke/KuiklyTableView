@@ -394,7 +394,7 @@ details.code-toggle[open] summary::before{transform:rotate(90deg)}
         </div>
         <details class="code-toggle">
           <summary>Kotlin DSL</summary>
-          <div class="code-block"><span class="cm">// Vertical-scroll table with row click handler</span>
+          <div class="code-block"><div class="code-header"><div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div></div><div class="code-content"><span class="cm">// Vertical-scroll table with row click handler</span>
 <span class="kw">Table</span> {
     <span class="fn">attr</span> {
         <span class="fn">height</span>(<span class="num">360f</span>)
@@ -407,7 +407,7 @@ details.code-toggle[open] summary::before{transform:rotate(90deg)}
             <span class="type">TableCell</span> { <span class="fn">text</span>(item.score.toString()) }
         }
     }
-}</div>
+}</div></div>
         </details>
       </div>
     </div>
@@ -433,7 +433,7 @@ details.code-toggle[open] summary::before{transform:rotate(90deg)}
         </div>
         <details class="code-toggle">
           <summary>Kotlin DSL</summary>
-          <div class="code-block"><span class="cm">// Bidirectional scroll table - wide columns</span>
+          <div class="code-block"><div class="code-header"><div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div></div><div class="code-content"><span class="cm">// Bidirectional scroll table - wide columns</span>
 <span class="kw">HTable</span>(tableWidth = <span class="num">700f</span>) {
     <span class="fn">attr</span> {
         <span class="fn">width</span>(MATCH_PARENT)
@@ -444,7 +444,7 @@ details.code-toggle[open] summary::before{transform:rotate(90deg)}
             <span class="type">TableCell</span> { <span class="fn">attr</span> { <span class="fn">width</span>(<span class="num">100f</span>) }; <span class="fn">text</span>(col) }
         }
     }
-}</div>
+}</div></div>
         </details>
       </div>
     </div>
@@ -461,7 +461,7 @@ details.code-toggle[open] summary::before{transform:rotate(90deg)}
         </div>
         <details class="code-toggle">
           <summary>Kotlin DSL</summary>
-          <div class="code-block"><span class="type">TableRow</span>(height = <span class="num">44f</span>) {
+          <div class="code-block"><div class="code-header"><div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div></div><div class="code-content"><span class="type">TableRow</span>(height = <span class="num">44f</span>) {
     <span class="type">TableCell</span> {
         <span class="fn">attr</span> { <span class="fn">flex</span>(<span class="num">1f</span>); <span class="fn">paddingHorizontal</span>(<span class="num">12f</span>) }
         <span class="fn">text</span>(item.name) { <span class="fn">attr</span> { <span class="fn">fontSize</span>(<span class="num">14f</span>) } }
@@ -470,7 +470,7 @@ details.code-toggle[open] summary::before{transform:rotate(90deg)}
         <span class="fn">attr</span> { <span class="fn">width</span>(<span class="num">80f</span>); <span class="fn">align</span>(CENTER) }
         <span class="fn">text</span>(item.dept)
     }
-}</div>
+}</div></div>
         </details>
       </div>
     </div>
@@ -510,7 +510,7 @@ details.code-toggle[open] summary::before{transform:rotate(90deg)}
         </div>
         <details class="code-toggle">
           <summary>Kotlin DSL</summary>
-          <div class="code-block"><span class="kw">Table</span> {
+          <div class="code-block"><div class="code-header"><div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div></div><div class="code-content"><span class="kw">Table</span> {
     <span class="fn">attr</span> { <span class="fn">theme</span>(<span class="type">TableTheme.AntBlue</span>) }
     <span class="type">ThemedHeaderRow</span>(theme = <span class="type">TableTheme.AntBlue</span>) {
         <span class="fn">listOf</span>(<span class="str">"Name"</span>,<span class="str">"Department"</span>,<span class="str">"Score"</span>,<span class="str">"Grade"</span>).forEach {
@@ -522,7 +522,7 @@ details.code-toggle[open] summary::before{transform:rotate(90deg)}
             <span class="type">TableCell</span> { <span class="fn">text</span>(item.name) }
         }
     }
-}</div>
+}</div></div>
         </details>
       </div>
     </div>
@@ -549,7 +549,7 @@ details.code-toggle[open] summary::before{transform:rotate(90deg)}
         </div>
         <details class="code-toggle">
           <summary>Kotlin DSL</summary>
-          <div class="code-block"><span class="kw">var</span> sortCol <span class="kw">by</span> <span class="fn">observable</span>(<span class="str">"name"</span>)
+          <div class="code-block"><div class="code-header"><div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div></div><div class="code-content"><span class="kw">var</span> sortCol <span class="kw">by</span> <span class="fn">observable</span>(<span class="str">"name"</span>)
 <span class="kw">var</span> sortOrder <span class="kw">by</span> <span class="fn">observable</span>(<span class="type">SortOrder.NONE</span>)
 
 <span class="type">ThemedHeaderRow</span>(theme = theme) {
@@ -561,7 +561,7 @@ details.code-toggle[open] summary::before{transform:rotate(90deg)}
             sortOrder = sortOrder.next()
         }
     ) { <span class="fn">attr</span> { <span class="fn">flex</span>(<span class="num">2f</span>) } }
-}</div>
+}</div></div>
         </details>
       </div>
     </div>
@@ -587,7 +587,7 @@ details.code-toggle[open] summary::before{transform:rotate(90deg)}
         </div>
         <details class="code-toggle">
           <summary>Kotlin DSL</summary>
-          <div class="code-block"><span class="kw">Table</span> {
+          <div class="code-block"><div class="code-header"><div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div></div><div class="code-content"><span class="kw">Table</span> {
     <span class="type">ThemedHeaderRow</span>(theme = theme) { <span class="cm">/* header cells */</span> }
     data.forEachIndexed { i, item ->
         <span class="type">ThemedTableRow</span>(theme = theme, alt = i % <span class="num">2</span> == <span class="num">1</span>) { <span class="cm">/* cells */</span> }
@@ -596,7 +596,7 @@ details.code-toggle[open] summary::before{transform:rotate(90deg)}
         <span class="type">TableCell</span> { <span class="fn">text</span>(<span class="str">"Total: ${data.size} records"</span>) }
         <span class="type">TableCell</span> { <span class="fn">text</span>(<span class="str">"Avg: ${data.avgScore()}"</span>) }
     }
-}</div>
+}</div></div>
         </details>
       </div>
     </div>
@@ -628,7 +628,7 @@ details.code-toggle[open] summary::before{transform:rotate(90deg)}
         <div class="pagination" id="paged-pagination"></div>
         <details class="code-toggle">
           <summary>Kotlin DSL</summary>
-          <div class="code-block"><span class="kw">var</span> currentPage <span class="kw">by</span> <span class="fn">observable</span>(<span class="num">1</span>)
+          <div class="code-block"><div class="code-header"><div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div></div><div class="code-content"><span class="kw">var</span> currentPage <span class="kw">by</span> <span class="fn">observable</span>(<span class="num">1</span>)
 <span class="kw">val</span> pageSize = <span class="num">3</span>
 <span class="kw">val</span> totalPages = <span class="fn">ceil</span>(data.size / pageSize.toFloat()).<span class="fn">toInt</span>()
 
@@ -641,7 +641,7 @@ details.code-toggle[open] summary::before{transform:rotate(90deg)}
     currentPage = currentPage,
     totalPages = totalPages,
     onPageChange = { currentPage = it }
-)</div>
+)</div></div>
         </details>
       </div>
     </div>
@@ -660,7 +660,7 @@ details.code-toggle[open] summary::before{transform:rotate(90deg)}
         <div id="empty-demo-container"></div>
         <details class="code-toggle">
           <summary>Kotlin DSL</summary>
-          <div class="code-block"><span class="kw">Table</span> {
+          <div class="code-block"><div class="code-header"><div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div></div><div class="code-content"><span class="kw">Table</span> {
     <span class="fn">attr</span> { <span class="fn">height</span>(<span class="num">200f</span>) }
     <span class="kw">if</span> (data.isEmpty()) {
         <span class="type">TableEmptyView</span> {
@@ -671,7 +671,7 @@ details.code-toggle[open] summary::before{transform:rotate(90deg)}
     } <span class="kw">else</span> {
         data.forEach { <span class="type">TableRow</span> { <span class="cm">/* ... */</span> } }
     }
-}</div>
+}</div></div>
         </details>
       </div>
     </div>
@@ -693,7 +693,7 @@ details.code-toggle[open] summary::before{transform:rotate(90deg)}
         <div id="search-count" style="font-size:12px;color:var(--text-muted);margin-top:6px"></div>
         <details class="code-toggle">
           <summary>Kotlin DSL</summary>
-          <div class="code-block"><span class="kw">var</span> query <span class="kw">by</span> <span class="fn">observable</span>(<span class="str">""</span>)
+          <div class="code-block"><div class="code-header"><div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div></div><div class="code-content"><span class="kw">var</span> query <span class="kw">by</span> <span class="fn">observable</span>(<span class="str">""</span>)
 <span class="kw">val</span> filtered = data.<span class="fn">filter</span> {
     query.isEmpty() ||
     it.name.<span class="fn">contains</span>(query, ignoreCase = <span class="kw">true</span>) ||
@@ -706,7 +706,7 @@ details.code-toggle[open] summary::before{transform:rotate(90deg)}
 )
 <span class="kw">Table</span> {
     filtered.forEach { item -> <span class="type">TableRow</span> { <span class="cm">/* ... */</span> } }
-}</div>
+}</div></div>
         </details>
       </div>
     </div>
@@ -729,7 +729,7 @@ details.code-toggle[open] summary::before{transform:rotate(90deg)}
         </div>
         <details class="code-toggle">
           <summary>Kotlin DSL</summary>
-          <div class="code-block"><span class="type">TableHeaderGroup</span> {
+          <div class="code-block"><div class="code-header"><div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div></div><div class="code-content"><span class="type">TableHeaderGroup</span> {
     <span class="type">TableGroupCell</span>(text = <span class="str">"Identity"</span>, colspan = <span class="num">2</span>)
     <span class="type">TableGroupCell</span>(text = <span class="str">"Performance"</span>, colspan = <span class="num">2</span>)
     <span class="type">TableGroupCell</span>(text = <span class="str">"Info"</span>, colspan = <span class="num">1</span>)
@@ -738,7 +738,7 @@ details.code-toggle[open] summary::before{transform:rotate(90deg)}
     <span class="fn">listOf</span>(<span class="str">"#"</span>,<span class="str">"Name"</span>,<span class="str">"Score"</span>,<span class="str">"Grade"</span>,<span class="str">"Note"</span>).forEach {
         <span class="type">TableCell</span> { <span class="fn">text</span>(it) }
     }
-}</div>
+}</div></div>
         </details>
       </div>
     </div>
@@ -755,7 +755,7 @@ details.code-toggle[open] summary::before{transform:rotate(90deg)}
         </div>
         <details class="code-toggle">
           <summary>Kotlin DSL</summary>
-          <div class="code-block"><span class="kw">var</span> expandedId <span class="kw">by</span> <span class="fn">observable</span>(-<span class="num">1</span>)
+          <div class="code-block"><div class="code-header"><div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div></div><div class="code-content"><span class="kw">var</span> expandedId <span class="kw">by</span> <span class="fn">observable</span>(-<span class="num">1</span>)
 
 data.forEach { item ->
     <span class="type">ExpandableTableRow</span>(
@@ -769,7 +769,7 @@ data.forEach { item ->
             <span class="type">TableCell</span>(colspan = <span class="num">4</span>) { <span class="fn">text</span>(<span class="str">"Note: ${item.note}"</span>) }
         }
     }
-}</div>
+}</div></div>
         </details>
       </div>
     </div>
@@ -787,7 +787,7 @@ data.forEach { item ->
         </div>
         <details class="code-toggle">
           <summary>Kotlin DSL</summary>
-          <div class="code-block"><span class="kw">var</span> selected <span class="kw">by</span> <span class="fn">observable</span>(<span class="fn">mutableSetOf</span>&lt;<span class="type">Int</span>&gt;())
+          <div class="code-block"><div class="code-header"><div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div></div><div class="code-content"><span class="kw">var</span> selected <span class="kw">by</span> <span class="fn">observable</span>(<span class="fn">mutableSetOf</span>&lt;<span class="type">Int</span>&gt;())
 
 <span class="kw">if</span> (selected.isNotEmpty()) {
     <span class="type">TableBatchActionBar</span>(count = selected.size) {
@@ -800,7 +800,7 @@ data.forEach { item ->
         checked = item.id <span class="kw">in</span> selected,
         onChecked = { v -> <span class="kw">if</span> (v) selected += item.id <span class="kw">else</span> selected -= item.id }
     ) { <span class="type">TableCell</span> { <span class="fn">text</span>(item.name) } }
-}</div>
+}</div></div>
         </details>
       </div>
     </div>
@@ -818,7 +818,7 @@ data.forEach { item ->
         </div>
         <details class="code-toggle">
           <summary>Kotlin DSL</summary>
-          <div class="code-block"><span class="type">StickyTable</span> {
+          <div class="code-block"><div class="code-header"><div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div></div><div class="code-content"><span class="type">StickyTable</span> {
     <span class="fn">attr</span> { <span class="fn">height</span>(<span class="num">200f</span>) }
     <span class="type">ThemedHeaderRow</span>(theme = theme, sticky = <span class="kw">true</span>) {
         <span class="cm">/* header stays pinned while body scrolls */</span>
@@ -826,7 +826,7 @@ data.forEach { item ->
     data.forEach { item ->
         <span class="type">ThemedTableRow</span>(theme = theme) { <span class="cm">/* ... */</span> }
     }
-}</div>
+}</div></div>
         </details>
       </div>
     </div>
@@ -852,7 +852,7 @@ data.forEach { item ->
         </div>
         <details class="code-toggle">
           <summary>Kotlin DSL</summary>
-          <div class="code-block"><span class="type">FrozenColumnTable</span>(frozenCols = <span class="num">1</span>) {
+          <div class="code-block"><div class="code-header"><div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div></div><div class="code-content"><span class="type">FrozenColumnTable</span>(frozenCols = <span class="num">1</span>) {
     <span class="fn">attr</span> { <span class="fn">width</span>(MATCH_PARENT); <span class="fn">height</span>(<span class="num">300f</span>) }
     data.forEach { item ->
         <span class="type">TableRow</span> {
@@ -862,7 +862,7 @@ data.forEach { item ->
             }
         }
     }
-}</div>
+}</div></div>
         </details>
       </div>
     </div>
@@ -878,7 +878,7 @@ data.forEach { item ->
         <div id="swipe-container"></div>
         <details class="code-toggle">
           <summary>Kotlin DSL</summary>
-          <div class="code-block"><span class="type">SwipeableTableRow</span>(
+          <div class="code-block"><div class="code-header"><div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div></div><div class="code-content"><span class="type">SwipeableTableRow</span>(
     trailingActions = {
         <span class="type">SwipeAction</span>(<span class="str">"Archive"</span>, color = <span class="str">"#f59e0b"</span>) { archive(item) }
         <span class="type">SwipeAction</span>(<span class="str">"Edit"</span>,    color = <span class="str">"#3b82f6"</span>) { edit(item) }
@@ -886,7 +886,7 @@ data.forEach { item ->
     }
 ) {
     <span class="type">TableCell</span> { <span class="fn">text</span>(item.name) }
-}</div>
+}</div></div>
         </details>
       </div>
     </div>
@@ -907,7 +907,7 @@ data.forEach { item ->
         </div>
         <details class="code-toggle">
           <summary>Kotlin DSL</summary>
-          <div class="code-block"><span class="kw">var</span> expanded <span class="kw">by</span> <span class="fn">observable</span>(<span class="fn">mutableSetOf</span>&lt;<span class="type">String</span>&gt;())
+          <div class="code-block"><div class="code-header"><div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div></div><div class="code-content"><span class="kw">var</span> expanded <span class="kw">by</span> <span class="fn">observable</span>(<span class="fn">mutableSetOf</span>&lt;<span class="type">String</span>&gt;())
 
 <span class="kw">fun</span> <span class="fn">renderNode</span>(node: <span class="type">TreeNode</span>, depth: <span class="type">Int</span> = <span class="num">0</span>) {
     <span class="type">TreeTableRow</span>(
@@ -922,7 +922,7 @@ data.forEach { item ->
     <span class="kw">if</span> (node.id <span class="kw">in</span> expanded)
         node.children.forEach { <span class="fn">renderNode</span>(it, depth + <span class="num">1</span>) }
 }
-TREE.forEach { <span class="fn">renderNode</span>(it) }</div>
+TREE.forEach { <span class="fn">renderNode</span>(it) }</div></div>
         </details>
       </div>
     </div>
@@ -941,7 +941,7 @@ TREE.forEach { <span class="fn">renderNode</span>(it) }</div>
         <div id="infinite-status" style="font-size:12px;color:var(--text-muted);margin-top:6px"></div>
         <details class="code-toggle">
           <summary>Kotlin DSL</summary>
-          <div class="code-block"><span class="kw">var</span> items <span class="kw">by</span> <span class="fn">observable</span>(initialItems)
+          <div class="code-block"><div class="code-header"><div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div></div><div class="code-content"><span class="kw">var</span> items <span class="kw">by</span> <span class="fn">observable</span>(initialItems)
 <span class="kw">var</span> loading <span class="kw">by</span> <span class="fn">observable</span>(<span class="kw">false</span>)
 
 <span class="type">InfiniteTable</span>(
@@ -955,7 +955,7 @@ TREE.forEach { <span class="fn">renderNode</span>(it) }</div>
 ) {
     items.forEach { <span class="type">TableRow</span> { <span class="cm">/* ... */</span> } }
     <span class="kw">if</span> (loading) <span class="type">LoadingFooter</span>()
-}</div>
+}</div></div>
         </details>
       </div>
     </div>
@@ -973,7 +973,7 @@ TREE.forEach { <span class="fn">renderNode</span>(it) }</div>
         </div>
         <details class="code-toggle">
           <summary>Kotlin DSL</summary>
-          <div class="code-block"><span class="kw">var</span> editingId <span class="kw">by</span> <span class="fn">observable</span>(-<span class="num">1</span>)
+          <div class="code-block"><div class="code-header"><div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div></div><div class="code-content"><span class="kw">var</span> editingId <span class="kw">by</span> <span class="fn">observable</span>(-<span class="num">1</span>)
 <span class="kw">var</span> draft <span class="kw">by</span> <span class="fn">observable</span>&lt;<span class="type">Person?</span>&gt;(<span class="kw">null</span>)
 
 data.forEach { item ->
@@ -988,7 +988,7 @@ data.forEach { item ->
         <span class="kw">else</span>
             <span class="type">TableCell</span> { <span class="fn">text</span>(item.name) }
     }
-}</div>
+}</div></div>
         </details>
       </div>
     </div>
@@ -1946,6 +1946,11 @@ function initAll() {
   renderEditableTable();
 }
 document.addEventListener('DOMContentLoaded', initAll);
+window.addEventListener('scroll',()=>{
+  const btn = document.getElementById('scroll-top');
+  if(btn) btn.style.display=window.scrollY>400?'flex':'none';
+},{passive:true});
 </script>
+<button id="scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" style="display:none;position:fixed;bottom:24px;right:24px;width:40px;height:40px;border-radius:50%;background:var(--accent);color:#fff;border:none;cursor:pointer;font-size:18px;z-index:200;box-shadow:0 4px 12px rgba(59,130,246,.4);transition:all .2s;align-items:center;justify-content:center" title="Back to top">&#8593;</button>
 </body>
 </html>
