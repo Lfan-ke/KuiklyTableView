@@ -17,6 +17,8 @@ import com.tencent.kuiklybase.table.TableRow
 import com.tencent.kuiklybase.table.TableTheme
 import com.tencent.kuiklybase.table.ThemedHeaderRow
 import com.tencent.kuiklybase.table.PaginationBar
+import com.tencent.kuiklybase.table.TableEmptyView
+import com.tencent.kuiklybase.table.ThemedSummaryRow
 import com.tencent.kuiklybase.table.ThemedTableRow
 import com.tencent.kuiklybase.table.theme
 import com.kuikly.kuiklytable.base.BasePager
@@ -224,6 +226,11 @@ internal class TableViewDemoPage : BasePager() {
                     }
                 }
 
+                // Empty state when no data
+                if (ctx.pagedItems().isEmpty()) {
+                    TableEmptyView(theme = ctx.themes[ctx.activeThemeIndex])
+                }
+
                 // Data rows (current page only)
                 ctx.pagedItems().forEachIndexed { index, item ->
                     ThemedTableRow(theme = ctx.themes[ctx.activeThemeIndex], index = index) {
@@ -282,6 +289,31 @@ internal class TableViewDemoPage : BasePager() {
                                         text(item.grade)
                                     }
                                 }
+                            }
+                        }
+                    }
+                }
+
+                // Summary row: avg score for current page
+                if (ctx.pagedItems().isNotEmpty()) {
+                    val avgScore = ctx.pagedItems().map { it.score }.average().toInt()
+                    ThemedSummaryRow(theme = ctx.themes[ctx.activeThemeIndex]) {
+                        TableCell {
+                            attr { flex(2f); justifyContentCenter(); paddingLeft(12f) }
+                            Text {
+                                attr { fontSize(13f); color(Color(0xFF555555L)); text("平均") }
+                            }
+                        }
+                        TableCell {
+                            attr { flex(1f); justifyContentCenter(); alignItemsCenter() }
+                            Text {
+                                attr { fontSize(13f); color(Color(0xFF555555L)); text("$avgScore") }
+                            }
+                        }
+                        TableCell {
+                            attr { flex(1f); justifyContentCenter(); alignItemsCenter() }
+                            Text {
+                                attr { fontSize(12f); color(Color(0xFF999999L)); text("avg") }
                             }
                         }
                     }

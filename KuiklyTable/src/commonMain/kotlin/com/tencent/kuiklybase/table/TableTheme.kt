@@ -87,6 +87,75 @@ fun TableAttr.theme(theme: TableTheme) {
 }
 
 /**
+ * Empty-state placeholder shown when a table has no data rows.
+ * Renders a centered "暂无数据" label (customizable via [message]) styled
+ * to the active [theme].
+ *
+ * Place this inside the [Table] DSL block, after the header row, when
+ * your data list is empty.
+ *
+ * Example:
+ * ```kotlin
+ * Table {
+ *     ThemedHeaderRow(theme) { /* … */ }
+ *     if (items.isEmpty()) {
+ *         TableEmptyView(theme)
+ *     } else {
+ *         items.forEachIndexed { i, item -> ThemedTableRow(theme, i) { /* … */ } }
+ *     }
+ * }
+ * ```
+ */
+fun ViewContainer<*, *>.TableEmptyView(
+    theme: TableTheme = TableTheme.Default,
+    height: Float = 120f,
+    message: String = "暂无数据",
+) {
+    TableRow {
+        attr {
+            rowHeight(height)
+            backgroundColor(theme.rowBackground)
+            flexDirectionRow()
+            justifyContentCenter()
+            alignItemsCenter()
+        }
+        Text {
+            attr {
+                fontSize(14f)
+                color(Color(0xFFBBBBBBL))
+                text(message)
+            }
+        }
+    }
+}
+
+/**
+ * Themed summary (footer) row pinned below data rows — matches the
+ * Element Plus and Arco Design "summary row" pattern.
+ *
+ * Applies [TableTheme.headerBackground] at reduced opacity via a slightly
+ * lighter tint, and [TableTheme.headerRowHeight] for height.
+ * The [init] block receives a [TableRowView] so you can add [TableCell]
+ * children with aggregated values (sum, average, etc.).
+ *
+ * @param theme Active table theme.
+ * @param init  Row content builder.
+ */
+fun ViewContainer<*, *>.ThemedSummaryRow(
+    theme: TableTheme = TableTheme.Default,
+    init: TableRowView.() -> Unit,
+) {
+    TableRow {
+        attr {
+            rowHeight(theme.headerRowHeight)
+            backgroundColor(theme.alternateRowBackground)
+            flexDirectionRow()
+        }
+        init()
+    }
+}
+
+/**
  * Themed header row that applies [TableTheme.headerBackground] and [TableTheme.headerRowHeight].
  */
 fun ViewContainer<*, *>.ThemedHeaderRow(
