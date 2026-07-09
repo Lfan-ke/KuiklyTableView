@@ -3,30 +3,46 @@ package com.kuikly.kuiklytable
 import com.tencent.kuikly.core.annotations.Page
 import com.tencent.kuikly.core.base.Color
 import com.tencent.kuikly.core.base.ViewBuilder
+import com.tencent.kuikly.core.base.ViewContainer
 import com.tencent.kuikly.core.log.KLog
+import com.tencent.kuikly.core.reactive.handler.observable
 import com.tencent.kuikly.core.views.Text
 import com.tencent.kuikly.core.views.View
 import com.tencent.kuiklybase.table.HTable
+import com.tencent.kuiklybase.table.SortOrder
+import com.tencent.kuiklybase.table.SortableHeaderCell
 import com.tencent.kuiklybase.table.Table
 import com.tencent.kuiklybase.table.TableCell
 import com.tencent.kuiklybase.table.TableRow
+import com.tencent.kuiklybase.table.TableTheme
+import com.tencent.kuiklybase.table.ThemedHeaderRow
+import com.tencent.kuiklybase.table.ThemedTableRow
+import com.tencent.kuiklybase.table.theme
 import com.kuikly.kuiklytable.base.BasePager
 
-private data class TableItem(val name: String, val score: String, val grade: String)
+private data class TableItem(val name: String, val score: Int, val grade: String)
 private data class WideItem(val name: String, val dept: String, val score: String, val grade: String, val note: String)
 
 @Page("TableViewDemoPage")
 internal class TableViewDemoPage : BasePager() {
 
-    private val items = listOf(
-        TableItem("Alice", "95", "A"),
-        TableItem("Bob", "82", "B"),
-        TableItem("Carol", "78", "C+"),
-        TableItem("Dave", "91", "A-"),
-        TableItem("Eve", "67", "D+"),
-        TableItem("Frank", "88", "B+"),
-        TableItem("Grace", "74", "C"),
-        TableItem("Henry", "99", "A+"),
+    // --- state ---
+    private var scoreSortOrder by observable(SortOrder.NONE)
+    private var nameSortOrder by observable(SortOrder.NONE)
+    private var activeThemeIndex by observable(0)
+
+    private val themes = listOf(TableTheme.Default, TableTheme.AntBlue, TableTheme.Teal, TableTheme.Dark)
+    private val themeNames = listOf("Default", "Ant Blue", "Teal", "Dark")
+
+    private val rawItems = listOf(
+        TableItem("Alice", 95, "A"),
+        TableItem("Bob", 82, "B"),
+        TableItem("Carol", 78, "C+"),
+        TableItem("Dave", 91, "A-"),
+        TableItem("Eve", 67, "D+"),
+        TableItem("Frank", 88, "B+"),
+        TableItem("Grace", 74, "C"),
+        TableItem("Henry", 99, "A+"),
     )
 
     private val wideItems = listOf(
@@ -38,6 +54,14 @@ internal class TableViewDemoPage : BasePager() {
         WideItem("Frank", "Design", "88", "B+", "Creative"),
     )
 
+    private fun sortedItems(): List<TableItem> = when {
+        scoreSortOrder == SortOrder.ASC -> rawItems.sortedBy { it.score }
+        scoreSortOrder == SortOrder.DESC -> rawItems.sortedByDescending { it.score }
+        nameSortOrder == SortOrder.ASC -> rawItems.sortedBy { it.name }
+        nameSortOrder == SortOrder.DESC -> rawItems.sortedByDescending { it.name }
+        else -> rawItems
+    }
+
     override fun body(): ViewBuilder {
         val ctx = this
         return {
@@ -45,6 +69,8 @@ internal class TableViewDemoPage : BasePager() {
                 backgroundColor(Color.WHITE)
                 flexDirectionColumn()
             }
+
+            // Title bar
             View {
                 attr {
                     height(56f)
@@ -61,6 +87,58 @@ internal class TableViewDemoPage : BasePager() {
                     }
                 }
             }
+
+            // Theme switcher
+            View {
+                attr {
+                    height(48f)
+                    flexDirectionRow()
+                    alignItemsCenter()
+                    paddingLeft(16f)
+                    paddingRight(16f)
+                    backgroundColor(Color(0xFFFAFAFAL))
+                    marginBottom(4f)
+                }
+                Text {
+                    attr {
+                        fontSize(13f)
+                        color(Color(0xFF555555L))
+                        text("主题: ")
+                        marginRight(8f)
+                    }
+                }
+                ctx.themeNames.forEachIndexed { index, name ->
+                    val selected = index == ctx.activeThemeIndex
+                    View {
+                        attr {
+                            height(28f)
+                            paddingLeft(10f)
+                            paddingRight(10f)
+                            borderRadius(14f)
+                            justifyContentCenter()
+                            alignItemsCenter()
+                            marginRight(8f)
+                            backgroundColor(
+                                if (selected) ctx.themes[index].headerBackground
+                                else Color(0xFFE0E0E0L)
+                            )
+                        }
+                        event { click { ctx.activeThemeIndex = index } }
+                        Text {
+                            attr {
+                                fontSize(12f)
+                                color(
+                                    if (selected) ctx.themes[index].headerTextColor
+                                    else Color(0xFF555555L)
+                                )
+                                text(name)
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Section label
             View {
                 attr {
                     height(36f)
@@ -72,15 +150,16 @@ internal class TableViewDemoPage : BasePager() {
                     attr {
                         fontSize(13f)
                         color(Color(0xFF555555L))
-                        text("垂直滚动 - Table")
+                        text("垂直滚动 - 主题表格（点列头排序）")
                     }
                 }
             }
+
+            // Themed sortable table
             Table {
                 attr {
-                    height(280f)
-                    separatorColor(Color(0xFFE0E0E0L))
-                    separatorHeight(0.5f)
+                    height(320f)
+                    theme(ctx.themes[ctx.activeThemeIndex])
                     allowsSelection(true)
                 }
                 event {
@@ -88,27 +167,33 @@ internal class TableViewDemoPage : BasePager() {
                         KLog.i("TableViewDemo", "row clicked: $index")
                     }
                 }
-                TableRow {
-                    attr {
-                        rowHeight(44f)
-                        backgroundColor(Color(0xFFF5F5F5L))
-                        flexDirectionRow()
-                    }
-                    TableCell {
-                        attr {
-                            flex(2f)
-                            justifyContentCenter()
-                            paddingLeft(16f)
-                        }
-                        Text {
-                            attr {
-                                fontSize(14f)
-                                color(Color(0xFF333333L))
-                                fontWeight700()
-                                text("Name")
+
+                // Header row with sort controls
+                ThemedHeaderRow(theme = ctx.themes[ctx.activeThemeIndex]) {
+                    SortableHeaderCell(
+                        text = "Name",
+                        sortOrder = ctx.nameSortOrder,
+                        theme = ctx.themes[ctx.activeThemeIndex],
+                        onSortClick = {
+                            ctx.scoreSortOrder = SortOrder.NONE
+                            ctx.nameSortOrder = when (ctx.nameSortOrder) {
+                                SortOrder.NONE, SortOrder.DESC -> SortOrder.ASC
+                                SortOrder.ASC -> SortOrder.DESC
                             }
                         }
-                    }
+                    ) { attr { flex(2f) } }
+                    SortableHeaderCell(
+                        text = "Score",
+                        sortOrder = ctx.scoreSortOrder,
+                        theme = ctx.themes[ctx.activeThemeIndex],
+                        onSortClick = {
+                            ctx.nameSortOrder = SortOrder.NONE
+                            ctx.scoreSortOrder = when (ctx.scoreSortOrder) {
+                                SortOrder.NONE, SortOrder.DESC -> SortOrder.ASC
+                                SortOrder.ASC -> SortOrder.DESC
+                            }
+                        }
+                    ) { attr { flex(1f) } }
                     TableCell {
                         attr {
                             flex(1f)
@@ -118,53 +203,27 @@ internal class TableViewDemoPage : BasePager() {
                         Text {
                             attr {
                                 fontSize(14f)
-                                color(Color(0xFF333333L))
-                                fontWeight700()
-                                text("Score")
-                            }
-                        }
-                    }
-                    TableCell {
-                        attr {
-                            flex(1f)
-                            justifyContentCenter()
-                            alignItemsCenter()
-                        }
-                        Text {
-                            attr {
-                                fontSize(14f)
-                                color(Color(0xFF333333L))
+                                color(ctx.themes[ctx.activeThemeIndex].headerTextColor)
                                 fontWeight700()
                                 text("Grade")
                             }
                         }
                     }
                 }
-                ctx.items.forEachIndexed { index, item ->
-                    TableRow {
-                        attr {
-                            rowHeight(48f)
-                            flexDirectionRow()
-                            backgroundColor(
-                                if (index % 2 == 0) Color.WHITE else Color(0xFFFAFAFAL)
-                            )
-                        }
+
+                // Data rows
+                ctx.sortedItems().forEachIndexed { index, item ->
+                    ThemedTableRow(theme = ctx.themes[ctx.activeThemeIndex], index = index) {
                         event {
-                            click {
-                                KLog.i("TableViewDemo", "clicked item: ${item.name}")
-                            }
-                            selected { idx ->
-                                KLog.i("TableViewDemo", "row $idx selected: ${item.name}")
-                            }
-                            deselected { idx ->
-                                KLog.i("TableViewDemo", "row $idx deselected")
-                            }
+                            click { KLog.i("TableViewDemo", "clicked: ${item.name}") }
+                            selected { idx -> KLog.i("TableViewDemo", "selected $idx: ${item.name}") }
+                            deselected { idx -> KLog.i("TableViewDemo", "deselected $idx") }
                         }
                         TableCell {
                             attr {
                                 flex(2f)
                                 justifyContentCenter()
-                                paddingLeft(16f)
+                                paddingLeft(12f)
                             }
                             Text {
                                 attr {
@@ -184,7 +243,7 @@ internal class TableViewDemoPage : BasePager() {
                                 attr {
                                     fontSize(14f)
                                     color(Color(0xFF212121L))
-                                    text(item.score)
+                                    text(item.score.toString())
                                 }
                             }
                         }
@@ -206,7 +265,7 @@ internal class TableViewDemoPage : BasePager() {
                                 Text {
                                     attr {
                                         fontSize(12f)
-                                        color(Color.WHITE)
+                                        color(Color(0xFFFFFFFFL))
                                         text(item.grade)
                                     }
                                 }
@@ -215,11 +274,13 @@ internal class TableViewDemoPage : BasePager() {
                     }
                 }
             }
+
+            // HTable section
             ctx.addHTableSection(this)
         }
     }
 
-    private fun addHTableSection(container: com.tencent.kuikly.core.base.ViewContainer<*, *>) {
+    private fun addHTableSection(container: ViewContainer<*, *>) {
         val ctx = this
         container.apply {
             View {
@@ -245,7 +306,6 @@ internal class TableViewDemoPage : BasePager() {
                     separatorColor(Color(0xFFE0E0E0L))
                     separatorHeight(0.5f)
                 }
-                // Header
                 TableRow {
                     attr {
                         rowHeight(44f)
@@ -275,7 +335,7 @@ internal class TableViewDemoPage : BasePager() {
                         attr {
                             rowHeight(48f)
                             flexDirectionRow()
-                            backgroundColor(if (idx % 2 == 0) Color.WHITE else Color(0xFFFAFAFAL))
+                            backgroundColor(if (idx % 2 == 0) Color(0xFFFFFFFFL) else Color(0xFFFAFAFAL))
                         }
                         event {
                             rowClick { _ -> KLog.i("HTableDemo", "clicked: ${item.name}") }
