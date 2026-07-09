@@ -21,6 +21,9 @@ import com.tencent.kuiklybase.table.TableEmptyView
 import com.tencent.kuiklybase.table.ThemedSummaryRow
 import com.tencent.kuiklybase.table.ThemedTableRow
 import com.tencent.kuiklybase.table.theme
+import com.tencent.kuiklybase.table.TableHeaderGroup
+import com.tencent.kuiklybase.table.TableGroupCell
+import com.tencent.kuiklybase.table.ExpandableTableRow
 import com.kuikly.kuiklytable.base.BasePager
 
 private data class TableItem(val name: String, val score: Int, val grade: String)
@@ -35,6 +38,7 @@ internal class TableViewDemoPage : BasePager() {
     private var activeThemeIndex by observable(0)
     private var currentPage by observable(1)
     private val pageSize = 3
+    private var expandedRows by observable(setOf<Int>())
 
     private val themes = listOf(TableTheme.Default, TableTheme.AntBlue, TableTheme.Teal, TableTheme.Dark)
     private val themeNames = listOf("Default", "Ant Blue", "Teal", "Dark")
@@ -332,6 +336,9 @@ internal class TableViewDemoPage : BasePager() {
 
             // HTable section
             ctx.addHTableSection(this)
+
+            // Expandable + grouped-header section
+            ctx.addExpandableSection(this)
         }
     }
 
@@ -411,6 +418,93 @@ internal class TableViewDemoPage : BasePager() {
                                 }
                             }
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun addExpandableSection(container: ViewContainer<*, *>) {
+        val ctx = this
+        container.apply {
+            View {
+                attr {
+                    height(40f)
+                    backgroundColor(Color(0xFFF7F7F7L))
+                    justifyContentCenter()
+                    paddingLeft(16f)
+                    marginTop(12f)
+                }
+                Text {
+                    attr {
+                        fontSize(14f)
+                        color(Color(0xFF1A1A1AL))
+                        fontWeight700()
+                        text("分组列头 + 可展开行")
+                    }
+                }
+            }
+            Table {
+                attr {
+                    height(320f)
+                    theme(ctx.themes[ctx.activeThemeIndex])
+                }
+                TableHeaderGroup(ctx.themes[ctx.activeThemeIndex]) {
+                    TableGroupCell("基本信息", ctx.themes[ctx.activeThemeIndex]) {
+                        attr { flex(3f) }
+                    }
+                    TableGroupCell("详情", ctx.themes[ctx.activeThemeIndex]) {
+                        attr { flex(2f) }
+                    }
+                }
+                ctx.rawItems.take(4).forEachIndexed { i, item ->
+                    ExpandableTableRow(
+                        theme = ctx.themes[ctx.activeThemeIndex],
+                        index = i,
+                        expanded = i in ctx.expandedRows,
+                        onToggle = {
+                            ctx.expandedRows = if (i in ctx.expandedRows)
+                                ctx.expandedRows - i
+                            else
+                                ctx.expandedRows + i
+                        },
+                        expandedContent = {
+                            Text {
+                                attr {
+                                    fontSize(13f)
+                                    color(Color(0xFF555555L))
+                                    text("${item.name} 的详情：分数 ${item.score}，等级 ${item.grade}，表现优秀。")
+                                }
+                            }
+                        }
+                    ) {
+                        TableCell {
+                            attr { flex(2f); justifyContentCenter(); paddingLeft(8f) }
+                            Text {
+                                attr { fontSize(14f); color(Color(0xFF212121L)); text(item.name) }
+                            }
+                        }
+                        TableCell {
+                            attr { flex(1f); justifyContentCenter(); alignItemsCenter() }
+                            Text {
+                                attr { fontSize(14f); color(Color(0xFF212121L)); text(item.score.toString()) }
+                            }
+                        }
+                        TableCell {
+                            attr { flex(1f); justifyContentCenter(); alignItemsCenter() }
+                            View {
+                                attr {
+                                    paddingLeft(6f); paddingRight(6f)
+                                    paddingTop(2f); paddingBottom(2f)
+                                    borderRadius(4f)
+                                    backgroundColor(ctx.gradeColor(item.grade))
+                                }
+                                Text {
+                                    attr { fontSize(12f); color(Color(0xFFFFFFFFL)); text(item.grade) }
+                                }
+                            }
+                        }
+                        TableCell { attr { flex(1f) } }
                     }
                 }
             }

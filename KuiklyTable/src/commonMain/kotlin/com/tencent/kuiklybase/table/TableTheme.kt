@@ -357,3 +357,87 @@ fun ViewContainer<*, *>.PaginationBar(
         }
     }
 }
+
+fun ViewContainer<*, *>.TableHeaderGroup(
+    theme: TableTheme = TableTheme.Default,
+    init: TableRowView.() -> Unit,
+) {
+    TableRow {
+        attr {
+            rowHeight(theme.headerRowHeight)
+            backgroundColor(theme.headerBackground)
+            flexDirectionRow()
+        }
+        init()
+    }
+}
+
+fun ViewContainer<*, *>.TableGroupCell(
+    label: String,
+    theme: TableTheme = TableTheme.Default,
+    init: TableCellView.() -> Unit = {},
+) {
+    TableCell {
+        attr {
+            flexDirectionColumn()
+            alignItemsCenter()
+            justifyContentCenter()
+        }
+        Text {
+            attr {
+                fontSize(13f)
+                color(theme.headerTextColor)
+                fontWeight700()
+                text(label)
+            }
+        }
+        init()
+    }
+}
+
+fun ViewContainer<*, *>.ExpandableTableRow(
+    theme: TableTheme = TableTheme.Default,
+    index: Int,
+    expanded: Boolean,
+    onToggle: () -> Unit = {},
+    expandedContent: (ViewContainer<*, *>.() -> Unit)? = null,
+    init: TableRowView.() -> Unit,
+) {
+    TableRow {
+        attr {
+            rowHeight(theme.rowHeight)
+            backgroundColor(if (index % 2 == 0) theme.rowBackground else theme.alternateRowBackground)
+            flexDirectionRow()
+            alignItemsCenter()
+        }
+        TableCell {
+            attr {
+                width(36f)
+                justifyContentCenter()
+                alignItemsCenter()
+            }
+            event { click { onToggle() } }
+            Text {
+                attr {
+                    fontSize(12f)
+                    color(theme.headerBackground)
+                    text(if (expanded) "▼" else "▶")
+                }
+            }
+        }
+        init()
+    }
+    if (expanded && expandedContent != null) {
+        TableRow {
+            attr {
+                backgroundColor(theme.selectedBackground)
+                flexDirectionColumn()
+                paddingLeft(36f)
+                paddingRight(12f)
+                paddingTop(8f)
+                paddingBottom(8f)
+            }
+            expandedContent()
+        }
+    }
+}
