@@ -161,16 +161,24 @@ select.ctrl:focus,input.ctrl:focus{border-color:var(--accent);box-shadow:0 0 0 3
 /* PHONE FRAME */
 .phone-frame{
   width:220px;min-width:220px;height:440px;
-  background:#1c1c1e;border-radius:36px;
+  background:#1c1c1e;border-radius:48px;
   overflow:hidden;position:relative;
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.1),0 0 0 2px #5a5a5c,0 0 0 8px #1c1c1e,0 0 0 10px #3a3a3c,0 20px 60px rgba(0,0,0,.4);
   flex-shrink:0;display:flex;flex-direction:column;
 }
 .phone-notch{
-  height:32px;background:#1c1c1e;display:flex;align-items:center;justify-content:space-between;
+  height:30px;background:#1c1c1e;display:flex;align-items:center;justify-content:space-between;
   padding:0 14px;flex-shrink:0;color:rgba(255,255,255,.9);font-size:10px;font-weight:600;
+  position:relative;
 }
-.phone-notch-pill{width:72px;height:20px;background:#1c1c1e;border-radius:0 0 14px 14px;border:1.5px solid #2a2a2a;border-top:none;margin:0 auto;position:absolute;left:50%;transform:translateX(-50%)}
+.phone-notch-pill{
+  width:11px;height:11px;background:#0a0a0a;border-radius:50%;
+  border:none;
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.12),0 0 0 1px rgba(255,255,255,.04)
+}
+.pn-time{font-size:9px;font-weight:600;color:rgba(255,255,255,.85);letter-spacing:.2px}
+.pn-bat{width:16px;height:16px;color:rgba(255,255,255,.85);flex-shrink:0}
 .phone-screen{flex:1;overflow:auto;font-size:11px;background:#f5f5f5}
 .phone-table{width:100%;border-collapse:collapse}
 .phone-table th{padding:5px 6px;font-size:10px;font-weight:600;border-bottom:1px solid #e2e8f0;background:#f5f5f5;color:#333;text-align:left}
@@ -392,7 +400,7 @@ details.code-toggle[open] summary::before{transform:rotate(90deg)}
             </div>
           </div>
           <div class="phone-frame">
-            <div class="phone-notch"><div class="phone-notch-pill"></div></div>
+            <div class="phone-notch"><span class="pn-time">9:41</span><div class="phone-notch-pill"></div><svg class="pn-bat" viewBox="0 0 24 24"><rect x="2" y="7" width="16" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M22 11v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="4" y="9" width="8" height="6" rx="1" fill="currentColor"/></svg></div>
             <div class="phone-screen" id="phone-basic"></div>
           </div>
         </div>
@@ -431,7 +439,7 @@ details.code-toggle[open] summary::before{transform:rotate(90deg)}
             </div>
           </div>
           <div class="phone-frame">
-            <div class="phone-notch"><div class="phone-notch-pill"></div></div>
+            <div class="phone-notch"><span class="pn-time">9:41</span><div class="phone-notch-pill"></div><svg class="pn-bat" viewBox="0 0 24 24"><rect x="2" y="7" width="16" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M22 11v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="4" y="9" width="8" height="6" rx="1" fill="currentColor"/></svg></div>
             <div class="phone-screen" style="overflow:auto" id="phone-htable"></div>
           </div>
         </div>
@@ -508,7 +516,7 @@ details.code-toggle[open] summary::before{transform:rotate(90deg)}
             </div>
           </div>
           <div class="phone-frame">
-            <div class="phone-notch"><div class="phone-notch-pill"></div></div>
+            <div class="phone-notch"><span class="pn-time">9:41</span><div class="phone-notch-pill"></div><svg class="pn-bat" viewBox="0 0 24 24"><rect x="2" y="7" width="16" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M22 11v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="4" y="9" width="8" height="6" rx="1" fill="currentColor"/></svg></div>
             <div class="phone-screen" id="phone-theme"></div>
           </div>
         </div>
@@ -850,7 +858,7 @@ data.forEach { item ->
             </div>
           </div>
           <div class="phone-frame">
-            <div class="phone-notch"><div class="phone-notch-pill"></div></div>
+            <div class="phone-notch"><span class="pn-time">9:41</span><div class="phone-notch-pill"></div><svg class="pn-bat" viewBox="0 0 24 24"><rect x="2" y="7" width="16" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M22 11v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="4" y="9" width="8" height="6" rx="1" fill="currentColor"/></svg></div>
             <div class="phone-screen" style="overflow:auto" id="phone-frozen"></div>
           </div>
         </div>
