@@ -179,7 +179,7 @@ select.ctrl:focus,input.ctrl:focus{border-color:var(--accent);box-shadow:0 0 0 3
 /* PHONE FRAME */
 .phone-frame{
   width:220px;min-width:220px;height:440px;
-  background:#1c1c1e;border-radius:48px;
+  background:#1c1c1e;border-radius:24px;
   overflow:hidden;position:relative;
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.1),0 0 0 2px #5a5a5c,0 0 0 8px #1c1c1e,0 0 0 10px #3a3a3c,0 20px 60px rgba(0,0,0,.4);
   flex-shrink:0;display:flex;flex-direction:column;
@@ -1084,6 +1084,11 @@ function renderAll() {
   renderExpandableTable(); renderCheckboxTable(); renderSwipeRows();
   renderTreeTable(); renderInfiniteTable(); renderEditableTable();
   renderGroupTable(); renderStickyTable(); renderFrozenTable();
+  const tSel = document.getElementById('theme-sel');
+  if (tSel) { renderThemeTable(tSel.value); renderPhoneTheme(tSel.value); }
+  renderSortTable();
+  const rSel = document.getElementById('themed-rows-sel');
+  if (rSel) renderThemedRows(rSel.value);
 }
 
 function toggleTheme() {
@@ -1308,6 +1313,17 @@ function renderRowCellTable() {
   });
 }
 
+// returns row/alt/sep adapted to current pageTheme for non-Dark themes
+function themeRow(tk) {
+  const t = THEMES[tk] || THEMES.Default;
+  if (pageTheme !== 'dark' || tk === 'Dark') return t;
+  const c = colors();
+  return Object.assign({}, t, {rowBg:c.row, altBg:c.alt, sep:c.sep, summaryBg:'#1e2d3a'});
+}
+function themeTxt(tk) {
+  return (pageTheme === 'dark' || tk === 'Dark') ? '#e2e8f0' : '';
+}
+
 // ===================== THEME TABLE =====================
 function applyDemoTheme(tk) {
   renderThemeTable(tk);
@@ -1315,23 +1331,24 @@ function applyDemoTheme(tk) {
 }
 function renderThemeTable(tk) {
   const t = THEMES[tk] || THEMES.Default;
+  const r = themeRow(tk);
   const table = document.getElementById('theme-table');
   table.innerHTML = '';
   const thead = table.createTHead();
   const htr = thead.insertRow();
   ['Name','Department','Score','Grade'].forEach(h => {
-    htr.appendChild(mkTh(h, {background:t.headerBg, color:t.headerText, borderBottomColor:t.sep}));
+    htr.appendChild(mkTh(h, {background:t.headerBg, color:t.headerText, borderBottomColor:r.sep}));
   });
   const tbody = table.createTBody();
   PEOPLE.forEach((p, i) => {
     const tr = tbody.insertRow();
     tr.className = 'data-row';
-    tr.style.background = i%2===0 ? t.rowBg : t.altBg;
+    tr.style.background = i%2===0 ? r.rowBg : r.altBg;
     [p.name, p.dept, p.score, gradeSpan(p.grade)].forEach(v => {
-      tr.appendChild(mkTd(v, {borderBottomColor:t.sep, color:tk==='Dark'?'#e5e7eb':''}));
+      tr.appendChild(mkTd(v, {borderBottomColor:r.sep, color:themeTxt(tk)}));
     });
   });
-  document.getElementById('theme-table-wrap').style.borderColor = t.sep;
+  document.getElementById('theme-table-wrap').style.borderColor = r.sep;
 }
 function renderPhoneTheme(tk) {
   const t = THEMES[tk] || THEMES.Default;
@@ -1389,44 +1406,46 @@ function renderSortTable() {
       return sortState.dir * (av < bv ? -1 : av > bv ? 1 : 0);
     });
   }
+  const r = themeRow(tk);
   const tbody = table.createTBody();
   data.forEach((p, i) => {
     const tr = tbody.insertRow();
     tr.className = 'data-row';
-    tr.style.background = i%2===0 ? t.rowBg : t.altBg;
+    tr.style.background = i%2===0 ? r.rowBg : r.altBg;
     [p.name, p.dept, p.score, gradeSpan(p.grade)].forEach(v => {
-      tr.appendChild(mkTd(v, {borderBottomColor:t.sep, color:tk==='Dark'?'#e5e7eb':''}));
+      tr.appendChild(mkTd(v, {borderBottomColor:r.sep, color:themeTxt(tk)}));
     });
   });
-  document.getElementById('sort-table-wrap').style.borderColor = t.sep;
+  document.getElementById('sort-table-wrap').style.borderColor = r.sep;
 }
 
 // ===================== THEMED ROWS =====================
 function renderThemedRows(tk) {
   const t = THEMES[tk] || THEMES.Default;
+  const r = themeRow(tk);
   const table = document.getElementById('themed-rows-table');
   table.innerHTML = '';
   const thead = table.createTHead();
   const htr = thead.insertRow();
   ['Name','Dept','Score','Grade'].forEach(h => {
-    htr.appendChild(mkTh(h, {background:t.headerBg, color:t.headerText, borderBottomColor:t.sep}));
+    htr.appendChild(mkTh(h, {background:t.headerBg, color:t.headerText, borderBottomColor:r.sep}));
   });
   const tbody = table.createTBody();
   PEOPLE.forEach((p, i) => {
     const tr = tbody.insertRow();
     tr.className = 'data-row';
-    tr.style.background = i%2===0 ? t.rowBg : t.altBg;
+    tr.style.background = i%2===0 ? r.rowBg : r.altBg;
     [p.name, p.dept, p.score, gradeSpan(p.grade)].forEach(v => {
-      tr.appendChild(mkTd(v, {borderBottomColor:t.sep, color:tk==='Dark'?'#e5e7eb':''}));
+      tr.appendChild(mkTd(v, {borderBottomColor:r.sep, color:themeTxt(tk)}));
     });
   });
   const avg = Math.round(PEOPLE.reduce((s,p)=>s+p.score,0)/PEOPLE.length);
   const sftr = tbody.insertRow();
   sftr.className = 'summary-row';
   [`Total: ${PEOPLE.length} records`,'',`Avg: ${avg}`,''].forEach(v => {
-    sftr.appendChild(mkTd(v, {background:t.summaryBg, borderBottomColor:t.sep, fontWeight:'600', color:tk==='Dark'?'#e5e7eb':'#555'}));
+    sftr.appendChild(mkTd(v, {background:r.summaryBg, borderBottomColor:r.sep, fontWeight:'600', color:themeTxt(tk)||'#555'}));
   });
-  document.getElementById('themed-rows-wrap').style.borderColor = t.sep;
+  document.getElementById('themed-rows-wrap').style.borderColor = r.sep;
 }
 
 // ===================== PAGINATION =====================
