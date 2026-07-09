@@ -6,12 +6,14 @@ import com.tencent.kuikly.core.base.ViewBuilder
 import com.tencent.kuikly.core.log.KLog
 import com.tencent.kuikly.core.views.Text
 import com.tencent.kuikly.core.views.View
+import com.tencent.kuiklybase.table.HTable
 import com.tencent.kuiklybase.table.Table
 import com.tencent.kuiklybase.table.TableCell
 import com.tencent.kuiklybase.table.TableRow
 import com.kuikly.kuiklytable.base.BasePager
 
 private data class TableItem(val name: String, val score: String, val grade: String)
+private data class WideItem(val name: String, val dept: String, val score: String, val grade: String, val note: String)
 
 @Page("TableViewDemoPage")
 internal class TableViewDemoPage : BasePager() {
@@ -25,6 +27,15 @@ internal class TableViewDemoPage : BasePager() {
         TableItem("Frank", "88", "B+"),
         TableItem("Grace", "74", "C"),
         TableItem("Henry", "99", "A+"),
+    )
+
+    private val wideItems = listOf(
+        WideItem("Alice", "Engineering", "95", "A", "Top performer"),
+        WideItem("Bob", "Design", "82", "B", "Consistent"),
+        WideItem("Carol", "Product", "78", "C+", "Improving"),
+        WideItem("Dave", "Engineering", "91", "A-", "Strong"),
+        WideItem("Eve", "Marketing", "67", "D+", "Needs support"),
+        WideItem("Frank", "Design", "88", "B+", "Creative"),
     )
 
     override fun body(): ViewBuilder {
@@ -50,9 +61,24 @@ internal class TableViewDemoPage : BasePager() {
                     }
                 }
             }
+            View {
+                attr {
+                    height(36f)
+                    backgroundColor(Color(0xFFEEEEEEL))
+                    justifyContentCenter()
+                    paddingLeft(16f)
+                }
+                Text {
+                    attr {
+                        fontSize(13f)
+                        color(Color(0xFF555555L))
+                        text("垂直滚动 - Table")
+                    }
+                }
+            }
             Table {
                 attr {
-                    flex(1f)
+                    height(280f)
                     separatorColor(Color(0xFFE0E0E0L))
                     separatorHeight(0.5f)
                     allowsSelection(true)
@@ -182,6 +208,90 @@ internal class TableViewDemoPage : BasePager() {
                                         fontSize(12f)
                                         color(Color.WHITE)
                                         text(item.grade)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            ctx.addHTableSection(this)
+        }
+    }
+
+    private fun addHTableSection(container: com.tencent.kuikly.core.base.ViewContainer<*, *>) {
+        val ctx = this
+        container.apply {
+            View {
+                attr {
+                    height(40f)
+                    backgroundColor(Color(0xFFF7F7F7L))
+                    justifyContentCenter()
+                    paddingLeft(16f)
+                    marginTop(12f)
+                }
+                Text {
+                    attr {
+                        fontSize(14f)
+                        color(Color(0xFF1A1A1AL))
+                        fontWeight700()
+                        text("双向滚动 - HTable（向右划）")
+                    }
+                }
+            }
+            HTable(tableWidth = 700f) {
+                attr {
+                    flex(1f)
+                    separatorColor(Color(0xFFE0E0E0L))
+                    separatorHeight(0.5f)
+                }
+                // Header
+                TableRow {
+                    attr {
+                        rowHeight(44f)
+                        backgroundColor(Color(0xFFF5F5F5L))
+                        flexDirectionRow()
+                    }
+                    for (header in listOf("Name" to 120f, "Dept" to 160f, "Score" to 80f, "Grade" to 80f, "Note" to 260f)) {
+                        TableCell {
+                            attr {
+                                width(header.second)
+                                justifyContentCenter()
+                                paddingLeft(12f)
+                            }
+                            Text {
+                                attr {
+                                    fontSize(13f)
+                                    color(Color(0xFF333333L))
+                                    fontWeight700()
+                                    text(header.first)
+                                }
+                            }
+                        }
+                    }
+                }
+                ctx.wideItems.forEachIndexed { idx, item ->
+                    TableRow {
+                        attr {
+                            rowHeight(48f)
+                            flexDirectionRow()
+                            backgroundColor(if (idx % 2 == 0) Color.WHITE else Color(0xFFFAFAFAL))
+                        }
+                        event {
+                            rowClick { _ -> KLog.i("HTableDemo", "clicked: ${item.name}") }
+                        }
+                        for (cell in listOf(item.name to 120f, item.dept to 160f, item.score to 80f, item.grade to 80f, item.note to 260f)) {
+                            TableCell {
+                                attr {
+                                    width(cell.second)
+                                    justifyContentCenter()
+                                    paddingLeft(12f)
+                                }
+                                Text {
+                                    attr {
+                                        fontSize(13f)
+                                        color(Color(0xFF212121L))
+                                        text(cell.first)
                                     }
                                 }
                             }
