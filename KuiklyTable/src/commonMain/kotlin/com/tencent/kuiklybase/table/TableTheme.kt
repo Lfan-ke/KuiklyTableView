@@ -15,9 +15,13 @@
 
 package com.tencent.kuiklybase.table
 
+import com.tencent.kuikly.core.base.Animation
 import com.tencent.kuikly.core.base.Border
 import com.tencent.kuikly.core.base.BorderStyle
+import com.tencent.kuikly.core.base.BoxShadow
 import com.tencent.kuikly.core.base.Color
+import com.tencent.kuikly.core.base.ColorStop
+import com.tencent.kuikly.core.base.Direction
 import com.tencent.kuikly.core.base.ViewContainer
 import com.tencent.kuikly.core.views.Text
 import com.tencent.kuikly.core.views.View
@@ -479,8 +483,7 @@ fun ViewContainer<*, *>.CheckboxTableRow(
         TableCell {
             attr {
                 width(40f)
-                justifyContentCenter()
-                alignItemsCenter()
+                allCenter()
             }
             event { click { onToggle() } }
             View {
@@ -488,8 +491,8 @@ fun ViewContainer<*, *>.CheckboxTableRow(
                     width(18f)
                     height(18f)
                     borderRadius(3f)
-                    justifyContentCenter()
-                    alignItemsCenter()
+                    allCenter()
+                    animate(Animation.easeInOut(0.18f), selected)
                     backgroundColor(if (selected) theme.headerBackground else Color(0xFFFFFFFFL))
                     border(Border(1.5f, BorderStyle.SOLID, if (selected) theme.headerBackground else Color(0xFFCCCCCCL)))
                 }
@@ -537,11 +540,17 @@ fun ViewContainer<*, *>.TableBatchActionBar(
             alignItemsCenter()
             paddingLeft(12f)
             paddingRight(12f)
-            backgroundColor(theme.selectedBackground)
+            backgroundLinearGradient(
+                Direction.TO_RIGHT,
+                ColorStop(theme.selectedBackground, 0f),
+                ColorStop(Color(red255 = 235, green255 = 245, blue255 = 255, alpha01 = 1f), 1f),
+            )
+            boxShadow(BoxShadow(0f, 2f, 8f, Color(red255 = 0, green255 = 0, blue255 = 0, alpha01 = 0.12f)))
         }
         Text {
             attr {
                 fontSize(13f)
+                fontWeightSemiBold()
                 color(theme.headerBackground)
                 text("已选 $selectedCount${if (totalCount > 0) "/$totalCount" else ""} 项")
                 flex(1f)
@@ -554,8 +563,7 @@ fun ViewContainer<*, *>.TableBatchActionBar(
                     paddingLeft(10f)
                     paddingRight(10f)
                     borderRadius(4f)
-                    justifyContentCenter()
-                    alignItemsCenter()
+                    allCenter()
                     marginRight(8f)
                     backgroundColor(theme.headerBackground)
                 }
@@ -576,8 +584,7 @@ fun ViewContainer<*, *>.TableBatchActionBar(
                     paddingLeft(10f)
                     paddingRight(10f)
                     borderRadius(4f)
-                    justifyContentCenter()
-                    alignItemsCenter()
+                    allCenter()
                     marginRight(8f)
                     backgroundColor(Color(0xFFFFFFFFL))
                     border(Border(1f, BorderStyle.SOLID, theme.separatorColor))
@@ -599,8 +606,7 @@ fun ViewContainer<*, *>.TableBatchActionBar(
                     paddingLeft(10f)
                     paddingRight(10f)
                     borderRadius(4f)
-                    justifyContentCenter()
-                    alignItemsCenter()
+                    allCenter()
                     marginRight(6f)
                     backgroundColor(Color(0xFFF44336L))
                 }
