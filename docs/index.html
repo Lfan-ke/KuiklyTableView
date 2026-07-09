@@ -1,1209 +1,1909 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KuiklyTableView - 跨平台表格组件库</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KuiklyTableView - Component Showcase</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0d1117;color:#e6edf3;display:flex;height:100vh;overflow:hidden}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --sidebar-bg:#0f172a;
+  --sidebar-active:#1e3a5f;
+  --sidebar-text:#94a3b8;
+  --sidebar-active-text:#e2e8f0;
+  --accent:#3b82f6;
+  --header-grad:linear-gradient(135deg,#0ea5e9 0%,#0284c7 100%);
+  --main-bg:#f1f5f9;
+  --card-bg:#ffffff;
+  --border:#e2e8f0;
+  --text:#1e293b;
+  --text-muted:#64748b;
+  --code-bg:#0f172a;
+  --code-text:#e2e8f0;
+  --sidebar-w:260px;
+  --header-h:56px;
+}
+[data-theme="dark"]{
+  --main-bg:#0b1120;
+  --card-bg:#1e293b;
+  --border:#334155;
+  --text:#e2e8f0;
+  --text-muted:#94a3b8;
+}
+html{scroll-behavior:smooth}
+body{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--main-bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
 
-/* ── SIDEBAR ── */
-#sidebar{width:240px;min-width:240px;background:#001529;display:flex;flex-direction:column;overflow-y:auto;border-right:1px solid #1f2937}
-.logo{padding:20px 16px 12px;border-bottom:1px solid #0f2942}
-.logo h1{font-size:15px;font-weight:700;color:#fff;letter-spacing:.5px}
-.logo p{font-size:11px;color:#6b8ca9;margin-top:3px}
-.nav-group{padding:12px 0 4px}
-.nav-group-title{font-size:11px;font-weight:600;color:#4a6b8a;padding:0 16px 6px;text-transform:uppercase;letter-spacing:.8px}
-.nav-item{display:flex;align-items:center;gap:8px;padding:8px 16px;cursor:pointer;font-size:13px;color:#8cb4d4;transition:all .15s;border-left:3px solid transparent}
-.nav-item:hover{color:#d4e9ff;background:rgba(22,119,255,.08)}
-.nav-item.active{color:#fff;background:rgba(22,119,255,.15);border-left-color:#1677ff}
-.nav-item .badge{font-size:10px;background:#1677ff;color:#fff;border-radius:8px;padding:1px 6px;margin-left:auto}
+/* HEADER */
+.top-bar{
+  position:fixed;top:0;left:0;right:0;height:var(--header-h);z-index:100;
+  background:var(--header-grad);
+  display:flex;align-items:center;padding:0 16px;gap:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,.25);
+}
+.top-bar .logo{font-size:18px;font-weight:700;color:#fff;letter-spacing:-.3px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-bar .logo span{opacity:.75;font-weight:400;font-size:13px;margin-left:8px}
+.top-bar-actions{display:flex;align-items:center;gap:8px}
+.btn-icon{background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:5px;text-decoration:none;transition:background .2s}
+.btn-icon:hover{background:rgba(255,255,255,.3)}
+.btn-icon svg{width:16px;height:16px;fill:currentColor}
 
-/* ── MAIN ── */
-#main{flex:1;display:flex;overflow:hidden}
+/* LAYOUT */
+.layout{display:flex;margin-top:var(--header-h);min-height:calc(100vh - var(--header-h))}
 
-/* ── PHONE FRAME ── */
-#preview-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:20px;overflow-y:auto;gap:16px}
-.comp-title{font-size:22px;font-weight:700;color:#e6edf3;text-align:center}
-.comp-desc{font-size:13px;color:#7d8fa8;text-align:center;max-width:400px;line-height:1.6}
-.phone{width:375px;height:680px;background:#000;border-radius:44px;padding:3px;box-shadow:0 30px 80px rgba(0,0,0,.6),inset 0 0 0 1px #333;position:relative;flex-shrink:0}
-.phone-notch{position:absolute;top:3px;left:50%;transform:translateX(-50%);width:120px;height:30px;background:#000;border-radius:0 0 18px 18px;z-index:10}
-.phone-screen{width:100%;height:100%;background:#f5f5f5;border-radius:42px;overflow:hidden;position:relative}
-.phone-screen.dark-bg{background:#16213e}
-#demo-frame{width:100%;height:100%;overflow-y:auto;overflow-x:hidden;padding-top:32px;position:relative}
+/* SIDEBAR */
+.sidebar{
+  width:var(--sidebar-w);min-width:var(--sidebar-w);
+  background:var(--sidebar-bg);
+  position:fixed;top:var(--header-h);left:0;bottom:0;
+  overflow-y:auto;z-index:50;
+  display:flex;flex-direction:column;
+}
+.sidebar-search{padding:12px;position:sticky;top:0;background:var(--sidebar-bg);z-index:1}
+.sidebar-search input{
+  width:100%;padding:7px 10px;border-radius:6px;border:1px solid #1e3a5f;
+  background:#1e293b;color:#e2e8f0;font-size:13px;outline:none;
+}
+.sidebar-search input:focus{border-color:var(--accent)}
+.sidebar-search input::placeholder{color:#475569}
+.sidebar-section{padding:4px 0}
+.sidebar-section-title{
+  padding:8px 16px 4px;font-size:11px;font-weight:600;
+  color:#475569;letter-spacing:.06em;text-transform:uppercase;
+}
+.sidebar-item{
+  display:block;padding:7px 16px;font-size:13px;color:var(--sidebar-text);
+  cursor:pointer;border-left:3px solid transparent;transition:all .15s;text-decoration:none;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.sidebar-item:hover{color:#e2e8f0;background:rgba(255,255,255,.05);border-left-color:rgba(59,130,246,.4)}
+.sidebar-item.active{color:var(--sidebar-active-text);background:var(--sidebar-active);border-left-color:var(--accent)}
 
-/* ── CODE BLOCK ── */
-.code-block{width:375px;background:#161b22;border:1px solid #30363d;border-radius:8px;overflow:hidden}
-.code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:#1c2128;border-bottom:1px solid #30363d}
-.code-lang{font-size:11px;color:#58a6ff;font-weight:600}
-.copy-btn{font-size:11px;color:#8b949e;cursor:pointer;padding:3px 8px;border:1px solid #30363d;border-radius:4px;background:transparent;transition:all .15s}
-.copy-btn:hover{color:#e6edf3;border-color:#58a6ff}
-pre{padding:14px;overflow-x:auto;font-size:12px;line-height:1.6;color:#c9d1d9;font-family:'SF Mono','Fira Code',monospace}
-.kw{color:#ff7b72}.cl{color:#ffa657}.fn{color:#d2a8ff}.st{color:#a5d6ff}.cm{color:#8b949e}.nb{color:#79c0ff}
+/* MAIN */
+.main{margin-left:var(--sidebar-w);flex:1;padding:24px;max-width:100%}
+.main-inner{max-width:960px;margin:0 auto}
 
-/* ── CONTROLS ── */
-#controls{width:280px;min-width:280px;background:#161b22;border-left:1px solid #21262d;overflow-y:auto;padding:0}
-.ctrl-section{padding:16px}
-.ctrl-section + .ctrl-section{border-top:1px solid #21262d}
-.ctrl-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#58a6ff;margin-bottom:12px}
-.ctrl-row{margin-bottom:12px}
-.ctrl-label{font-size:12px;color:#8b949e;margin-bottom:5px;display:block}
-.ctrl-row select,.ctrl-row input[type=range],.ctrl-row input[type=text]{width:100%;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#e6edf3;font-size:12px;padding:6px 8px;outline:none}
-.ctrl-row select:focus,.ctrl-row input:focus{border-color:#58a6ff}
-.ctrl-row input[type=range]{padding:4px 0;accent-color:#1677ff}
-.ctrl-row input[type=checkbox]{accent-color:#1677ff;width:14px;height:14px;margin-right:6px;cursor:pointer}
-.ctrl-check{display:flex;align-items:center;font-size:12px;color:#c9d1d9;cursor:pointer;user-select:none}
-.theme-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.theme-btn{padding:6px;border-radius:6px;border:2px solid #30363d;cursor:pointer;font-size:11px;text-align:center;color:#8b949e;transition:all .15s;background:transparent}
-.theme-btn:hover{border-color:#58a6ff;color:#e6edf3}
-.theme-btn.active{border-color:#1677ff;color:#1677ff;background:rgba(22,119,255,.1)}
-.action-btn{display:block;width:100%;padding:8px;border-radius:6px;border:1px solid #30363d;background:transparent;color:#8b949e;font-size:12px;cursor:pointer;transition:all .15s;margin-bottom:6px}
-.action-btn:hover{border-color:#1677ff;color:#1677ff;background:rgba(22,119,255,.08)}
-.action-btn.primary{background:#1677ff;border-color:#1677ff;color:#fff}
-.action-btn.primary:hover{background:#0958d9}
-.action-btn.danger{border-color:#f44336;color:#f44336}
-.action-btn.danger:hover{background:rgba(244,67,54,.08)}
-.val-display{font-size:11px;color:#58a6ff;float:right}
+/* PAGE HEADER */
+.page-title{font-size:26px;font-weight:700;margin-bottom:6px}
+.page-desc{color:var(--text-muted);margin-bottom:24px;font-size:14px;line-height:1.6}
 
-/* ── TABLE STYLES (in-demo) ── */
-.t-wrap{width:100%;background:#fff}
-.t-wrap.dark{background:#16213e;color:#e0e0e0}
-.t-header,.t-row{display:flex;align-items:center;min-height:44px;border-bottom:1px solid #e0e0e0}
-.dark .t-header,.dark .t-row{border-color:#2a3550}
-.t-header{background:#f5f5f5;font-size:13px;font-weight:600;color:#333;position:sticky;top:0;z-index:5}
-.dark .t-header{background:#1a1a2e;color:#e0e0e0}
-.t-row:nth-child(even){background:#fafafa}
-.dark .t-row:nth-child(even){background:#1e2a45}
-.t-row.selected{background:#e3f2fd!important}
-.dark .t-row.selected{background:#1a3a5c!important}
-.t-cell{flex:1;padding:0 12px;font-size:13px;color:#212121;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dark .t-cell{color:#c9d1d9}
-.t-cell.w48{flex:none;width:48px;justify-content:center;display:flex;align-items:center}
-.t-cell.w80{flex:none;width:80px;text-align:center}
+/* SECTION */
+.section{margin-bottom:40px}
+.section-title{
+  font-size:18px;font-weight:700;margin-bottom:4px;padding-bottom:10px;
+  border-bottom:2px solid var(--accent);display:inline-block;
+}
+.section-desc{color:var(--text-muted);font-size:13px;margin-bottom:16px}
 
-.grade-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;color:#fff;font-weight:600}
-.grade-a{background:#4caf50}.grade-b{background:#2196f3}.grade-c{background:#ff9800}.grade-d{background:#f44336}
+/* CARD */
+.card{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:24px}
+.card-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.card-title{font-size:14px;font-weight:600;color:var(--text)}
+.card-body{padding:16px}
+.card-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.card-controls label{font-size:12px;color:var(--text-muted)}
 
-/* sort arrows */
-.sort-arrow{display:inline-flex;flex-direction:column;margin-left:4px;cursor:pointer;gap:0}
-.sa-up,.sa-dn{font-size:8px;line-height:1;color:#bbb;transition:color .15s}
-.sa-up.active{color:#1677ff}.sa-dn.active{color:#1677ff}
+/* CONTROLS */
+select.ctrl,input.ctrl{
+  padding:5px 8px;border-radius:5px;border:1px solid var(--border);
+  background:var(--card-bg);color:var(--text);font-size:12px;outline:none;cursor:pointer;
+}
+select.ctrl:focus,input.ctrl:focus{border-color:var(--accent)}
+.ctrl-btn{
+  padding:5px 12px;border-radius:5px;border:1px solid var(--border);
+  background:var(--card-bg);color:var(--text);font-size:12px;cursor:pointer;transition:all .15s;
+}
+.ctrl-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.ctrl-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 
-/* pagination */
-.pg-bar{display:flex;align-items:center;justify-content:center;gap:4px;padding:10px;background:#fff;border-top:1px solid #e0e0e0}
-.dark .pg-bar{background:#1a1a2e;border-color:#2a3550}
-.pg-btn{width:32px;height:32px;border-radius:6px;border:1px solid #d9d9d9;background:#fff;cursor:pointer;font-size:13px;color:#333;transition:all .15s;display:flex;align-items:center;justify-content:center}
-.dark .pg-btn{background:#1e2a45;border-color:#2a3550;color:#c9d1d9}
-.pg-btn:hover{border-color:#1677ff;color:#1677ff}
-.pg-btn.active{background:#1677ff;border-color:#1677ff;color:#fff}
-.pg-btn:disabled{opacity:.4;cursor:default}
+/* DEMO TABLE */
+.demo-table-wrap{overflow:auto;border:1px solid var(--border);border-radius:6px}
+.demo-table{width:100%;border-collapse:collapse;font-size:13px;min-width:400px}
+.demo-table th{
+  padding:9px 12px;text-align:left;font-weight:600;font-size:12px;
+  border-bottom:1px solid;white-space:nowrap;
+}
+.demo-table td{padding:8px 12px;border-bottom:1px solid}
+.demo-table tr:last-child td{border-bottom:none}
+.demo-table th.sortable{cursor:pointer;user-select:none}
+.sort-icon{display:inline-block;margin-left:4px;opacity:.35;transition:all .2s;font-size:11px}
+.sort-icon.asc::after{content:'UP'}
+.sort-icon.desc::after{content:'DN'}
+.sort-icon:not(.asc):not(.desc)::after{content:'UD'}
 
-/* search bar */
-.search-bar-wrap{padding:8px 12px;background:#fff;border-bottom:1px solid #e0e0e0;position:relative}
-.dark .search-bar-wrap{background:#1a1a2e;border-color:#2a3550}
-.search-inner{display:flex;align-items:center;background:#f5f5f5;border-radius:6px;padding:0 10px;border:1px solid transparent;transition:border-color .2s}
-.dark .search-inner{background:#0d1117}
-.search-inner.focused{border-color:#1677ff;background:#fff;box-shadow:0 0 0 2px rgba(22,119,255,.15)}
-.dark .search-inner.focused{background:#1e2a45}
-.search-icon{color:#999;font-size:14px;margin-right:6px}
-.search-input{border:none;background:transparent;outline:none;font-size:13px;color:#333;flex:1;height:34px}
-.dark .search-input{color:#e0e0e0}
-.search-clear{color:#bbb;cursor:pointer;font-size:14px;padding:0 4px}
-.search-clear:hover{color:#333}
+/* PHONE FRAME */
+.phone-frame{
+  width:220px;min-width:220px;height:440px;
+  border:3px solid #1e293b;border-radius:28px;
+  overflow:hidden;background:#fff;position:relative;
+  box-shadow:0 8px 32px rgba(0,0,0,.18);
+  flex-shrink:0;
+}
+.phone-notch{
+  height:22px;background:#1e293b;display:flex;align-items:center;justify-content:center;
+}
+.phone-notch-pill{width:60px;height:10px;background:#111;border-radius:5px}
+.phone-screen{height:calc(100% - 22px);overflow:auto;font-size:11px}
+.phone-table{width:100%;border-collapse:collapse}
+.phone-table th{padding:5px 6px;font-size:10px;font-weight:600;border-bottom:1px solid #e2e8f0;background:#f5f5f5;color:#333;text-align:left}
+.phone-table td{padding:5px 6px;font-size:10px;border-bottom:1px solid #f0f0f0;color:#444}
 
-/* expandable */
-.expand-arrow{cursor:pointer;transition:transform .2s;display:inline-block;color:#1677ff;margin-right:6px;font-style:normal}
+/* DEMO LAYOUT */
+.demo-layout{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.demo-main{flex:1;min-width:280px}
+
+/* CODE BLOCK */
+.code-block{
+  background:var(--code-bg);border-radius:6px;padding:14px 16px;
+  font-family:'Fira Code','Cascadia Code','Consolas',monospace;font-size:12px;
+  color:var(--code-text);overflow-x:auto;line-height:1.6;
+  margin-top:12px;border:1px solid #1e3a5f;
+}
+.code-block .kw{color:#7dd3fc}
+.code-block .fn{color:#fde68a}
+.code-block .str{color:#86efac}
+.code-block .cm{color:#64748b}
+.code-block .num{color:#fb923c}
+.code-block .type{color:#c084fc}
+details.code-toggle{margin-top:10px}
+details.code-toggle summary{
+  cursor:pointer;font-size:12px;color:var(--accent);
+  padding:4px 0;user-select:none;list-style:none;display:flex;align-items:center;gap:4px;
+}
+details.code-toggle summary::-webkit-details-marker{display:none}
+details.code-toggle summary::before{content:'> ';font-size:10px}
+details.code-toggle[open] summary::before{content:'v '}
+
+/* BADGE */
+.badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:11px;font-weight:500;background:rgba(59,130,246,.12);color:var(--accent)}
+.badge.green{background:rgba(34,197,94,.12);color:#16a34a}
+.badge.orange{background:rgba(249,115,22,.12);color:#ea580c}
+.badge.red{background:rgba(239,68,68,.12);color:#dc2626}
+
+/* PAGINATION */
+.pagination{display:flex;align-items:center;gap:4px;margin-top:10px;flex-wrap:wrap}
+.page-btn{
+  min-width:30px;height:30px;border-radius:5px;border:1px solid var(--border);
+  background:var(--card-bg);color:var(--text);font-size:12px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;padding:0 8px;
+}
+.page-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.page-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.page-btn:disabled{opacity:.4;cursor:default}
+.page-info{font-size:12px;color:var(--text-muted);margin-left:6px}
+
+/* CHECKBOX */
+.cb{accent-color:var(--accent);cursor:pointer}
+.batch-bar{
+  background:var(--accent);color:#fff;border-radius:6px;
+  padding:8px 14px;font-size:12px;display:flex;align-items:center;gap:8px;margin-bottom:8px;
+}
+.batch-btn{
+  background:rgba(255,255,255,.2);border:none;color:#fff;
+  border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;
+}
+.batch-btn:hover{background:rgba(255,255,255,.35)}
+
+/* EXPANDABLE */
+.expand-btn{cursor:pointer;color:var(--accent);font-size:12px;display:inline-flex;align-items:center;gap:4px;background:none;border:none;padding:0}
+.expand-arrow{display:inline-block;transition:transform .2s;font-size:10px}
 .expand-arrow.open{transform:rotate(90deg)}
-.expand-content{overflow:hidden;transition:max-height .25s ease,opacity .2s;max-height:0;opacity:0}
-.expand-content.open{max-height:200px;opacity:1}
-.expand-inner{background:#f0f7ff;padding:10px 12px;font-size:12px;color:#555;border-top:1px solid #e8f0fe}
-.dark .expand-inner{background:#1a2840;color:#8cb4d4;border-color:#2a3550}
 
-/* checkbox */
-.cb-box{width:16px;height:16px;border-radius:3px;border:2px solid #d9d9d9;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
-.cb-box.checked{background:#1677ff;border-color:#1677ff}
-.cb-box.checked::after{content:'✓';color:#fff;font-size:10px;line-height:1}
-.cb-box.indeterminate{background:#1677ff;border-color:#1677ff}
-.cb-box.indeterminate::after{content:'−';color:#fff;font-size:12px;line-height:1}
+/* SWIPEABLE */
+.swipe-wrap{position:relative;overflow:hidden}
+.swipe-actions{
+  position:absolute;right:0;top:0;height:100%;display:flex;
+  transform:translateX(100%);transition:transform .25s;
+}
+.swipe-action-btn{
+  display:flex;align-items:center;justify-content:center;
+  width:60px;border:none;color:#fff;font-size:11px;cursor:pointer;
+}
+.swipe-wrap.swiped .swipe-actions{transform:translateX(0)}
+.swipe-wrap.swiped .swipe-content{transform:translateX(-120px)}
+.swipe-content{transition:transform .25s;background:var(--card-bg)}
 
-/* batch action bar */
-.batch-bar{position:sticky;bottom:0;left:0;right:0;background:linear-gradient(135deg,#1677ff,#0958d9);color:#fff;display:flex;align-items:center;padding:10px 14px;gap:10px;font-size:13px;box-shadow:0 -2px 12px rgba(22,119,255,.3);transform:translateY(100%);transition:transform .25s}
-.batch-bar.visible{transform:translateY(0)}
-.batch-bar .ba-count{flex:1;font-weight:600}
-.ba-btn{padding:5px 12px;border-radius:4px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:12px;cursor:pointer;transition:background .15s}
-.ba-btn:hover{background:rgba(255,255,255,.35)}
+/* TREE */
+.tree-toggle{cursor:pointer;display:inline-flex;align-items:center;gap:4px;background:none;border:none;color:var(--accent);font-size:12px;padding:0;vertical-align:middle}
+.tree-icon{font-size:10px;display:inline-block;transition:transform .2s}
+.tree-icon.open{transform:rotate(90deg)}
+.tree-leaf::before{content:'- ';color:var(--text-muted)}
 
-/* swipeable */
-.sw-row-wrap{position:relative;overflow:hidden;border-bottom:1px solid #e0e0e0}
-.dark .sw-row-wrap{border-color:#2a3550}
-.sw-actions-right{position:absolute;right:0;top:0;bottom:0;display:flex}
-.sw-actions-left{position:absolute;left:0;top:0;bottom:0;display:flex}
-.sw-action{display:flex;flex-direction:column;align-items:center;justify-content:center;width:72px;cursor:pointer;gap:3px;font-size:12px;color:#fff;font-weight:600}
-.sw-content{background:#fff;transition:transform .25s cubic-bezier(.25,.46,.45,.94);position:relative;z-index:2}
-.dark .sw-content{background:#1e2a45}
-.sw-handle{cursor:pointer;-webkit-user-select:none;user-select:none}
+/* EDITABLE */
+.editable-input{
+  width:100%;padding:4px 6px;border-radius:4px;border:1px solid var(--accent);
+  background:var(--card-bg);color:var(--text);font-size:13px;outline:none;
+}
+.edit-btn{
+  padding:3px 10px;border-radius:4px;border:1px solid var(--border);
+  background:var(--card-bg);color:var(--text);font-size:11px;cursor:pointer;
+}
+.edit-btn.save{border-color:var(--accent);color:var(--accent)}
+.edit-btn.save:hover{background:var(--accent);color:#fff}
 
-/* tree table */
-.tree-indent{display:inline-flex;align-items:center}
-.tree-arrow{cursor:pointer;width:18px;display:inline-flex;align-items:center;justify-content:center;color:#1677ff;font-size:11px;transition:transform .15s;flex-shrink:0}
-.tree-arrow.open{transform:rotate(90deg)}
-.tree-leaf-space{width:18px;display:inline-block}
+/* STICKY HEADER */
+.sticky-table-wrap{max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:6px}
+.sticky-table-wrap .demo-table th{position:sticky;top:0;z-index:2}
 
-/* infinite */
-.load-more-row{display:flex;align-items:center;justify-content:center;padding:14px;color:#1677ff;font-size:13px;cursor:pointer;border-top:1px solid #e0e0e0;gap:8px}
-.dark .load-more-row{border-color:#2a3550}
-.spinner{width:14px;height:14px;border:2px solid #1677ff;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
+/* FROZEN COLUMN */
+.frozen-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:6px;max-width:100%}
+.frozen-table{border-collapse:collapse;font-size:13px;width:max-content}
+.frozen-table th,.frozen-table td{padding:8px 14px;white-space:nowrap;border-bottom:1px solid}
+.frozen-table th:first-child,.frozen-table td:first-child{position:sticky;left:0;z-index:1}
+.frozen-table th{font-size:12px;font-weight:600;border-bottom:2px solid !important}
 
-/* editable */
-.edit-input{border:1px solid #1677ff;border-radius:4px;padding:3px 7px;font-size:13px;color:#212121;background:#fff;outline:none;width:100%;box-shadow:0 0 0 2px rgba(22,119,255,.12)}
-.edit-btn{padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;font-weight:600;border:none}
-.edit-btn.edit{background:#1677ff;color:#fff}
-.edit-btn.save{background:#52c41a;color:#fff}
+/* EMPTY STATE */
+.empty-state{
+  text-align:center;padding:48px 16px;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+.empty-icon{font-size:48px;opacity:.3}
+.empty-title{font-size:14px;font-weight:600;color:var(--text-muted)}
+.empty-sub{font-size:12px;color:var(--text-muted)}
 
-/* frozen column */
-.frozen-wrap{position:relative;overflow:hidden;display:flex}
-.frozen-left{flex:none;width:100px;z-index:3;box-shadow:2px 0 6px rgba(0,0,0,.1)}
-.frozen-right{flex:1;overflow-x:auto}
-.frozen-right::-webkit-scrollbar{height:4px}.frozen-right::-webkit-scrollbar-track{background:#f0f0f0}.frozen-right::-webkit-scrollbar-thumb{background:#ccc;border-radius:2px}
-.fw-row{display:flex;min-height:44px;align-items:center;border-bottom:1px solid #e0e0e0}
-.dark .fw-row{border-color:#2a3550}
-.frozen-cell{flex:none;padding:0 12px;font-size:13px;color:#212121;white-space:nowrap}
-.dark .frozen-cell{color:#c9d1d9}
+/* INFINITE */
+.infinite-wrap{max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:6px}
+.load-more-footer{
+  text-align:center;padding:10px;font-size:12px;color:var(--accent);
+  cursor:pointer;border-top:1px solid var(--border);transition:background .15s;
+}
+.load-more-footer:hover{background:rgba(59,130,246,.05)}
 
-/* summary row */
-.t-summary{display:flex;align-items:center;min-height:40px;background:#fafafa;border-top:2px solid #e0e0e0}
-.dark .t-summary{background:#1a2035;border-color:#2a3550}
-.t-summary .t-cell{font-size:12px;color:#888}
-.dark .t-summary .t-cell{color:#6b8ca9}
+/* HTABLE */
+.htable-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:6px;padding-bottom:4px}
+.htable{border-collapse:collapse;font-size:13px;width:max-content}
+.htable th,.htable td{padding:8px 16px;white-space:nowrap;border-bottom:1px solid}
+.htable th{font-size:12px;font-weight:600}
 
-/* section header group */
-.header-group{display:flex;background:#f5f5f5;border-bottom:1px solid #e0e0e0}
-.dark .header-group{background:#1a1a2e;border-color:#2a3550}
-.hg-cell{flex:1;text-align:center;padding:6px;font-size:12px;font-weight:700;color:#555;border-right:1px solid #e0e0e0}
-.dark .hg-cell{color:#8cb4d4;border-color:#2a3550}
-.hg-cell:last-child{border-right:none}
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+[data-theme="dark"] ::-webkit-scrollbar-thumb{background:#334155}
 
-/* ── THEME VARS ── */
-[data-theme=ant]{--th:#1677ff;--thc:#fff}
-[data-theme=teal]{--th:#009688;--thc:#fff}
-[data-theme=dark]{--th:#1a1a2e;--thc:#e0e0e0}
-[data-theme=default]{--th:#f5f5f5;--thc:#333}
-
-/* scrollbar */
-#demo-frame::-webkit-scrollbar{width:3px}
-#demo-frame::-webkit-scrollbar-track{background:transparent}
-#demo-frame::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
-#controls::-webkit-scrollbar{width:3px}
-#controls::-webkit-scrollbar-track{background:transparent}
-#controls::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
-#sidebar::-webkit-scrollbar{width:3px}
-#sidebar::-webkit-scrollbar-track{background:transparent}
-#sidebar::-webkit-scrollbar-thumb{background:#0f2942;border-radius:2px}
-
-.hidden{display:none!important}
+/* RESPONSIVE */
+@media(max-width:768px){
+  :root{--sidebar-w:0px}
+  .sidebar{transform:translateX(-260px);width:260px;transition:transform .3s}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .phone-frame{display:none}
+}
 </style>
 </head>
 <body>
+<!-- TOP BAR -->
+<header class="top-bar">
+  <div class="logo">KuiklyTableView <span>Interactive Showcase</span></div>
+  <div class="top-bar-actions">
+    <a class="btn-icon" href="https://github.com/Lfan-ke/KuiklyTableView" target="_blank" rel="noopener">
+      <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
+    <button class="btn-icon" id="theme-toggle" onclick="toggleTheme()">
+      <svg viewBox="0 0 20 20" style="width:16px;height:16px;fill:currentColor"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/></svg>
+      Light
+    </button>
+  </div>
+</header>
 
+<!-- LAYOUT -->
+<div class="layout">
 <!-- SIDEBAR -->
-<nav id="sidebar">
-  <div class="logo">
-    <h1>🗃 KuiklyTableView</h1>
-    <p>跨平台表格组件库</p>
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-search">
+    <input type="text" placeholder="Search components..." id="sidebar-search" oninput="filterSidebar(this.value)">
   </div>
-
-  <div class="nav-group">
-    <div class="nav-group-title">基础组件</div>
-    <div class="nav-item active" data-comp="table">📋 Table <span class="badge">主表格</span></div>
-    <div class="nav-item" data-comp="htable">↔ HTable</div>
-    <div class="nav-item" data-comp="sticky">📌 StickyTable</div>
-    <div class="nav-item" data-comp="frozen">❄ FrozenColumnTable</div>
-    <div class="nav-item" data-comp="headergroup">▤ HeaderGroup</div>
-  </div>
-
-  <div class="nav-group">
-    <div class="nav-group-title">功能组件</div>
-    <div class="nav-item" data-comp="search">🔍 TableSearchBar</div>
-    <div class="nav-item" data-comp="sort">⇅ SortableHeader</div>
-    <div class="nav-item" data-comp="pagination">⟨⟩ PaginationBar</div>
-    <div class="nav-item" data-comp="summary">Σ SummaryRow</div>
-  </div>
-
-  <div class="nav-group">
-    <div class="nav-group-title">交互组件</div>
-    <div class="nav-item" data-comp="expand">▸ ExpandableRow</div>
-    <div class="nav-item" data-comp="checkbox">☑ CheckboxRow</div>
-    <div class="nav-item" data-comp="swipe">← SwipeableRow</div>
-    <div class="nav-item" data-comp="tree">🌳 TreeTable</div>
-    <div class="nav-item" data-comp="infinite">∞ InfiniteTable</div>
-    <div class="nav-item" data-comp="editable">✏ EditableRow</div>
-  </div>
+  <div id="sidebar-nav"></div>
 </nav>
 
 <!-- MAIN -->
-<div id="main">
-  <div id="preview-area">
-    <div class="comp-title" id="comp-title">Table</div>
-    <div class="comp-desc" id="comp-desc">垂直滚动主题表格，支持 4 种主题切换、行高调整、排序与分页。</div>
+<main class="main">
+<div class="main-inner">
 
-    <!-- PHONE FRAME -->
-    <div class="phone">
-      <div class="phone-notch"></div>
-      <div class="phone-screen" id="phone-screen">
-        <div id="demo-frame"></div>
+  <div class="page-title">KuiklyTableView Components</div>
+  <p class="page-desc">A KuiklyUI table component library for Android, iOS, and HarmonyOS. All demos below are fully interactive - click headers to sort, type to search, expand rows, edit inline, and more.</p>
+
+  <!-- ==================== SECTION: BASIC ==================== -->
+  <div class="section" id="sec-basic">
+    <div class="section-title">Basic Tables</div>
+    <p class="section-desc">Foundation table components: vertical scroll, horizontal scroll, and basic row/cell building blocks.</p>
+
+    <!-- TABLE -->
+    <div class="card" id="demo-Table">
+      <div class="card-header">
+        <div class="card-title">Table - vertical scroll, separator, row click</div>
+        <span class="badge">Table</span>
+      </div>
+      <div class="card-body">
+        <div class="card-controls">
+          <label>Row clicked:</label>
+          <span id="table-click-info" style="font-size:12px;color:var(--accent)">none</span>
+        </div>
+        <div class="demo-layout">
+          <div class="demo-main">
+            <div class="demo-table-wrap">
+              <table class="demo-table" id="basic-table"></table>
+            </div>
+          </div>
+          <div class="phone-frame">
+            <div class="phone-notch"><div class="phone-notch-pill"></div></div>
+            <div class="phone-screen" id="phone-basic"></div>
+          </div>
+        </div>
+        <details class="code-toggle">
+          <summary>Kotlin DSL</summary>
+          <div class="code-block"><span class="cm">// Vertical-scroll table with row click handler</span>
+<span class="kw">Table</span> {
+    <span class="fn">attr</span> {
+        <span class="fn">height</span>(<span class="num">360f</span>)
+        <span class="fn">separatorColor</span>(<span class="str">"#e0e0e0"</span>)
+    }
+    data.forEach { item ->
+        <span class="type">TableRow</span>(onClick = { <span class="fn">toast</span>(item.name) }) {
+            <span class="type">TableCell</span> { <span class="fn">text</span>(item.name) }
+            <span class="type">TableCell</span> { <span class="fn">text</span>(item.dept) }
+            <span class="type">TableCell</span> { <span class="fn">text</span>(item.score.toString()) }
+        }
+    }
+}</div>
+        </details>
       </div>
     </div>
 
-    <!-- CODE BLOCK -->
-    <div class="code-block" id="code-block">
-      <div class="code-header">
-        <span class="code-lang">Kotlin · KuiklyUI DSL</span>
-        <button class="copy-btn" onclick="copyCode()">复制</button>
+    <!-- HTABLE -->
+    <div class="card" id="demo-HTable">
+      <div class="card-header">
+        <div class="card-title">HTable - bidirectional horizontal scroll</div>
+        <span class="badge">HTable</span>
       </div>
-      <pre id="code-pre"></pre>
+      <div class="card-body">
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Scroll horizontally to reveal extra columns.</p>
+        <div class="demo-layout">
+          <div class="demo-main">
+            <div class="htable-wrap">
+              <table class="htable" id="htable"></table>
+            </div>
+          </div>
+          <div class="phone-frame">
+            <div class="phone-notch"><div class="phone-notch-pill"></div></div>
+            <div class="phone-screen" style="overflow:auto" id="phone-htable"></div>
+          </div>
+        </div>
+        <details class="code-toggle">
+          <summary>Kotlin DSL</summary>
+          <div class="code-block"><span class="cm">// Bidirectional scroll table - wide columns</span>
+<span class="kw">HTable</span>(tableWidth = <span class="num">700f</span>) {
+    <span class="fn">attr</span> {
+        <span class="fn">width</span>(MATCH_PARENT)
+        <span class="fn">height</span>(<span class="num">300f</span>)
+    }
+    <span class="type">TableRow</span> {
+        <span class="fn">listOf</span>(<span class="str">"ID"</span>,<span class="str">"Name"</span>,<span class="str">"Dept"</span>,<span class="str">"Score"</span>,<span class="str">"Grade"</span>,<span class="str">"Note"</span>,<span class="str">"YTD"</span>).forEach { col ->
+            <span class="type">TableCell</span> { <span class="fn">attr</span> { <span class="fn">width</span>(<span class="num">100f</span>) }; <span class="fn">text</span>(col) }
+        }
+    }
+}</div>
+        </details>
+      </div>
+    </div>
+
+    <!-- TableRow + TableCell -->
+    <div class="card" id="demo-TableRow">
+      <div class="card-header">
+        <div class="card-title">TableRow + TableCell - basic building blocks</div>
+        <span class="badge">TableRow</span>
+      </div>
+      <div class="card-body">
+        <div class="demo-table-wrap">
+          <table class="demo-table" id="rowcell-table"></table>
+        </div>
+        <details class="code-toggle">
+          <summary>Kotlin DSL</summary>
+          <div class="code-block"><span class="type">TableRow</span>(height = <span class="num">44f</span>) {
+    <span class="type">TableCell</span> {
+        <span class="fn">attr</span> { <span class="fn">flex</span>(<span class="num">1f</span>); <span class="fn">paddingHorizontal</span>(<span class="num">12f</span>) }
+        <span class="fn">text</span>(item.name) { <span class="fn">attr</span> { <span class="fn">fontSize</span>(<span class="num">14f</span>) } }
+    }
+    <span class="type">TableCell</span> {
+        <span class="fn">attr</span> { <span class="fn">width</span>(<span class="num">80f</span>); <span class="fn">align</span>(CENTER) }
+        <span class="fn">text</span>(item.dept)
+    }
+}</div>
+        </details>
+      </div>
     </div>
   </div>
 
-  <!-- CONTROLS -->
-  <div id="controls">
-    <div class="ctrl-section">
-      <div class="ctrl-title">主题</div>
-      <div class="theme-btns">
-        <div class="theme-btn active" data-theme="default" onclick="setTheme('default',this)">Default</div>
-        <div class="theme-btn" data-theme="ant" onclick="setTheme('ant',this)">AntBlue</div>
-        <div class="theme-btn" data-theme="teal" onclick="setTheme('teal',this)">Teal</div>
-        <div class="theme-btn" data-theme="dark" onclick="setTheme('dark',this)">Dark</div>
+  <!-- ==================== SECTION: THEME & SORT ==================== -->
+  <div class="section" id="sec-theme">
+    <div class="section-title">Theme &amp; Sort</div>
+    <p class="section-desc">Live theme switching across four built-in themes, and sortable column headers with animated arrows.</p>
+
+    <!-- TableTheme -->
+    <div class="card" id="demo-TableTheme">
+      <div class="card-header">
+        <div class="card-title">TableTheme - 4 built-in themes with live switcher</div>
+        <span class="badge">TableTheme</span>
+      </div>
+      <div class="card-body">
+        <div class="card-controls">
+          <label>Theme:</label>
+          <select class="ctrl" id="theme-sel" onchange="applyDemoTheme(this.value)">
+            <option value="Default">Default</option>
+            <option value="AntBlue">Ant Blue</option>
+            <option value="Teal">Teal</option>
+            <option value="Dark">Dark</option>
+          </select>
+        </div>
+        <div class="demo-layout">
+          <div class="demo-main">
+            <div class="demo-table-wrap" id="theme-table-wrap">
+              <table class="demo-table" id="theme-table"></table>
+            </div>
+          </div>
+          <div class="phone-frame">
+            <div class="phone-notch"><div class="phone-notch-pill"></div></div>
+            <div class="phone-screen" id="phone-theme"></div>
+          </div>
+        </div>
+        <details class="code-toggle">
+          <summary>Kotlin DSL</summary>
+          <div class="code-block"><span class="kw">Table</span> {
+    <span class="fn">attr</span> { <span class="fn">theme</span>(<span class="type">TableTheme.AntBlue</span>) }
+    <span class="type">ThemedHeaderRow</span>(theme = <span class="type">TableTheme.AntBlue</span>) {
+        <span class="fn">listOf</span>(<span class="str">"Name"</span>,<span class="str">"Department"</span>,<span class="str">"Score"</span>,<span class="str">"Grade"</span>).forEach {
+            <span class="type">TableCell</span> { <span class="fn">text</span>(it) }
+        }
+    }
+    data.forEachIndexed { i, item ->
+        <span class="type">ThemedTableRow</span>(theme = <span class="type">TableTheme.AntBlue</span>, alt = i % <span class="num">2</span> == <span class="num">1</span>) {
+            <span class="type">TableCell</span> { <span class="fn">text</span>(item.name) }
+        }
+    }
+}</div>
+        </details>
       </div>
     </div>
-    <div class="ctrl-section" id="ctrl-dynamic"></div>
+
+    <!-- SortableHeaderCell -->
+    <div class="card" id="demo-SortableHeaderCell">
+      <div class="card-header">
+        <div class="card-title">SortableHeaderCell - click column headers to sort ASC / DESC</div>
+        <span class="badge">SortableHeaderCell</span>
+      </div>
+      <div class="card-body">
+        <div class="card-controls">
+          <label>Theme:</label>
+          <select class="ctrl" id="sort-theme-sel" onchange="renderSortTable()">
+            <option value="Default">Default</option>
+            <option value="AntBlue">Ant Blue</option>
+            <option value="Teal">Teal</option>
+            <option value="Dark">Dark</option>
+          </select>
+          <span id="sort-status" style="font-size:12px;color:var(--text-muted)">Click a column header to sort</span>
+        </div>
+        <div class="demo-table-wrap" id="sort-table-wrap">
+          <table class="demo-table" id="sort-table"></table>
+        </div>
+        <details class="code-toggle">
+          <summary>Kotlin DSL</summary>
+          <div class="code-block"><span class="kw">var</span> sortCol <span class="kw">by</span> <span class="fn">observable</span>(<span class="str">"name"</span>)
+<span class="kw">var</span> sortOrder <span class="kw">by</span> <span class="fn">observable</span>(<span class="type">SortOrder.NONE</span>)
+
+<span class="type">ThemedHeaderRow</span>(theme = theme) {
+    <span class="type">SortableHeaderCell</span>(
+        text = <span class="str">"Name"</span>,
+        sortOrder = <span class="kw">if</span> (sortCol == <span class="str">"name"</span>) sortOrder <span class="kw">else</span> <span class="type">SortOrder.NONE</span>,
+        onSortClick = {
+            sortCol = <span class="str">"name"</span>
+            sortOrder = sortOrder.next()
+        }
+    ) { <span class="fn">attr</span> { <span class="fn">flex</span>(<span class="num">2f</span>) } }
+}</div>
+        </details>
+      </div>
+    </div>
+
+    <!-- ThemedRows -->
+    <div class="card" id="demo-ThemedRows">
+      <div class="card-header">
+        <div class="card-title">ThemedHeaderRow / ThemedTableRow / ThemedSummaryRow</div>
+        <span class="badge">ThemedRows</span>
+      </div>
+      <div class="card-body">
+        <div class="card-controls">
+          <label>Theme:</label>
+          <select class="ctrl" id="themed-rows-sel" onchange="renderThemedRows(this.value)">
+            <option value="Default">Default</option>
+            <option value="AntBlue">Ant Blue</option>
+            <option value="Teal">Teal</option>
+            <option value="Dark">Dark</option>
+          </select>
+        </div>
+        <div class="demo-table-wrap" id="themed-rows-wrap">
+          <table class="demo-table" id="themed-rows-table"></table>
+        </div>
+        <details class="code-toggle">
+          <summary>Kotlin DSL</summary>
+          <div class="code-block"><span class="kw">Table</span> {
+    <span class="type">ThemedHeaderRow</span>(theme = theme) { <span class="cm">/* header cells */</span> }
+    data.forEachIndexed { i, item ->
+        <span class="type">ThemedTableRow</span>(theme = theme, alt = i % <span class="num">2</span> == <span class="num">1</span>) { <span class="cm">/* cells */</span> }
+    }
+    <span class="type">ThemedSummaryRow</span>(theme = theme) {
+        <span class="type">TableCell</span> { <span class="fn">text</span>(<span class="str">"Total: ${data.size} records"</span>) }
+        <span class="type">TableCell</span> { <span class="fn">text</span>(<span class="str">"Avg: ${data.avgScore()}"</span>) }
+    }
+}</div>
+        </details>
+      </div>
+    </div>
   </div>
-</div>
+
+  <!-- ==================== SECTION: PAGINATION & SEARCH ==================== -->
+  <div class="section" id="sec-pagination">
+    <div class="section-title">Pagination &amp; Search</div>
+    <p class="section-desc">PaginationBar with prev/next/page numbers, empty state placeholder, and real-time search filtering.</p>
+
+    <!-- PaginationBar -->
+    <div class="card" id="demo-PaginationBar">
+      <div class="card-header">
+        <div class="card-title">PaginationBar - prev/next/page numbers, show total</div>
+        <span class="badge">PaginationBar</span>
+      </div>
+      <div class="card-body">
+        <div class="card-controls">
+          <label>Page size:</label>
+          <select class="ctrl" id="page-size-sel" onchange="renderPaginatedTable()">
+            <option value="3">3 / page</option>
+            <option value="4">4 / page</option>
+            <option value="5">5 / page</option>
+          </select>
+        </div>
+        <div class="demo-table-wrap">
+          <table class="demo-table" id="paged-table"></table>
+        </div>
+        <div class="pagination" id="paged-pagination"></div>
+        <details class="code-toggle">
+          <summary>Kotlin DSL</summary>
+          <div class="code-block"><span class="kw">var</span> currentPage <span class="kw">by</span> <span class="fn">observable</span>(<span class="num">1</span>)
+<span class="kw">val</span> pageSize = <span class="num">3</span>
+<span class="kw">val</span> totalPages = <span class="fn">ceil</span>(data.size / pageSize.toFloat()).<span class="fn">toInt</span>()
+
+<span class="kw">Table</span> {
+    pagedData(currentPage, pageSize).forEach { item ->
+        <span class="type">ThemedTableRow</span>(theme = theme) { <span class="cm">/* ... */</span> }
+    }
+}
+<span class="type">PaginationBar</span>(
+    currentPage = currentPage,
+    totalPages = totalPages,
+    onPageChange = { currentPage = it }
+)</div>
+        </details>
+      </div>
+    </div>
+
+    <!-- TableEmptyView -->
+    <div class="card" id="demo-TableEmptyView">
+      <div class="card-header">
+        <div class="card-title">TableEmptyView - empty state when no data</div>
+        <span class="badge">TableEmptyView</span>
+      </div>
+      <div class="card-body">
+        <div class="card-controls">
+          <button class="ctrl-btn" onclick="toggleEmptyDemo()">Toggle Empty / Data</button>
+          <span id="empty-status" style="font-size:12px;color:var(--text-muted)">Currently: empty</span>
+        </div>
+        <div id="empty-demo-container"></div>
+        <details class="code-toggle">
+          <summary>Kotlin DSL</summary>
+          <div class="code-block"><span class="kw">Table</span> {
+    <span class="fn">attr</span> { <span class="fn">height</span>(<span class="num">200f</span>) }
+    <span class="kw">if</span> (data.isEmpty()) {
+        <span class="type">TableEmptyView</span> {
+            <span class="fn">attr</span> { <span class="fn">width</span>(MATCH_PARENT) }
+            <span class="fn">text</span>(<span class="str">"No data available"</span>)
+            <span class="fn">image</span>(<span class="str">"ic_empty"</span>)
+        }
+    } <span class="kw">else</span> {
+        data.forEach { <span class="type">TableRow</span> { <span class="cm">/* ... */</span> } }
+    }
+}</div>
+        </details>
+      </div>
+    </div>
+
+    <!-- TableSearchBar -->
+    <div class="card" id="demo-TableSearchBar">
+      <div class="card-header">
+        <div class="card-title">TableSearchBar - real-time input filter</div>
+        <span class="badge">TableSearchBar</span>
+      </div>
+      <div class="card-body">
+        <div class="card-controls">
+          <input class="ctrl" type="text" id="search-input" placeholder="Search by name or department..." oninput="renderSearchTable(this.value)" style="width:260px">
+          <button class="ctrl-btn" onclick="document.getElementById('search-input').value='';renderSearchTable('')">Clear</button>
+        </div>
+        <div class="demo-table-wrap">
+          <table class="demo-table" id="search-table"></table>
+        </div>
+        <div id="search-count" style="font-size:12px;color:var(--text-muted);margin-top:6px"></div>
+        <details class="code-toggle">
+          <summary>Kotlin DSL</summary>
+          <div class="code-block"><span class="kw">var</span> query <span class="kw">by</span> <span class="fn">observable</span>(<span class="str">""</span>)
+<span class="kw">val</span> filtered = data.<span class="fn">filter</span> {
+    query.isEmpty() ||
+    it.name.<span class="fn">contains</span>(query, ignoreCase = <span class="kw">true</span>) ||
+    it.dept.<span class="fn">contains</span>(query, ignoreCase = <span class="kw">true</span>)
+}
+
+<span class="type">TableSearchBar</span>(
+    hint = <span class="str">"Search name or department"</span>,
+    onQueryChanged = { query = it }
+)
+<span class="kw">Table</span> {
+    filtered.forEach { item -> <span class="type">TableRow</span> { <span class="cm">/* ... */</span> } }
+}</div>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SECTION: ADVANCED ==================== -->
+  <div class="section" id="sec-advanced">
+    <div class="section-title">Advanced Features</div>
+    <p class="section-desc">Grouped headers, expandable rows, multi-select with batch actions, sticky header, frozen column, swipe actions, tree data, infinite scroll, and inline editing.</p>
+
+    <!-- TableHeaderGroup -->
+    <div class="card" id="demo-TableHeaderGroup">
+      <div class="card-header">
+        <div class="card-title">TableHeaderGroup + TableGroupCell - spanning column headers</div>
+        <span class="badge">TableHeaderGroup</span>
+      </div>
+      <div class="card-body">
+        <div class="demo-table-wrap">
+          <table class="demo-table" id="group-table"></table>
+        </div>
+        <details class="code-toggle">
+          <summary>Kotlin DSL</summary>
+          <div class="code-block"><span class="type">TableHeaderGroup</span> {
+    <span class="type">TableGroupCell</span>(text = <span class="str">"Identity"</span>, colspan = <span class="num">2</span>)
+    <span class="type">TableGroupCell</span>(text = <span class="str">"Performance"</span>, colspan = <span class="num">2</span>)
+    <span class="type">TableGroupCell</span>(text = <span class="str">"Info"</span>, colspan = <span class="num">1</span>)
+}
+<span class="type">ThemedHeaderRow</span>(theme = theme) {
+    <span class="fn">listOf</span>(<span class="str">"#"</span>,<span class="str">"Name"</span>,<span class="str">"Score"</span>,<span class="str">"Grade"</span>,<span class="str">"Note"</span>).forEach {
+        <span class="type">TableCell</span> { <span class="fn">text</span>(it) }
+    }
+}</div>
+        </details>
+      </div>
+    </div>
+
+    <!-- ExpandableTableRow -->
+    <div class="card" id="demo-ExpandableTableRow">
+      <div class="card-header">
+        <div class="card-title">ExpandableTableRow - click arrow to expand detail panel</div>
+        <span class="badge">ExpandableTableRow</span>
+      </div>
+      <div class="card-body">
+        <div class="demo-table-wrap">
+          <table class="demo-table" id="expandable-table"></table>
+        </div>
+        <details class="code-toggle">
+          <summary>Kotlin DSL</summary>
+          <div class="code-block"><span class="kw">var</span> expandedId <span class="kw">by</span> <span class="fn">observable</span>(-<span class="num">1</span>)
+
+data.forEach { item ->
+    <span class="type">ExpandableTableRow</span>(
+        expanded = expandedId == item.id,
+        onToggle = { expandedId = <span class="kw">if</span> (expandedId == item.id) -<span class="num">1</span> <span class="kw">else</span> item.id }
+    ) {
+        <span class="type">TableCell</span> { <span class="fn">text</span>(item.name) }
+    }
+    <span class="kw">if</span> (expandedId == item.id) {
+        <span class="type">TableRow</span> {
+            <span class="type">TableCell</span>(colspan = <span class="num">4</span>) { <span class="fn">text</span>(<span class="str">"Note: ${item.note}"</span>) }
+        }
+    }
+}</div>
+        </details>
+      </div>
+    </div>
+
+    <!-- CheckboxTableRow -->
+    <div class="card" id="demo-CheckboxTableRow">
+      <div class="card-header">
+        <div class="card-title">CheckboxTableRow + TableBatchActionBar - multi-select with batch actions</div>
+        <span class="badge">CheckboxTableRow</span>
+      </div>
+      <div class="card-body">
+        <div id="batch-bar-container"></div>
+        <div class="demo-table-wrap">
+          <table class="demo-table" id="checkbox-table"></table>
+        </div>
+        <details class="code-toggle">
+          <summary>Kotlin DSL</summary>
+          <div class="code-block"><span class="kw">var</span> selected <span class="kw">by</span> <span class="fn">observable</span>(<span class="fn">mutableSetOf</span>&lt;<span class="type">Int</span>&gt;())
+
+<span class="kw">if</span> (selected.isNotEmpty()) {
+    <span class="type">TableBatchActionBar</span>(count = selected.size) {
+        <span class="type">BatchAction</span>(<span class="str">"Delete"</span>) { deleteRows(selected) }
+        <span class="type">BatchAction</span>(<span class="str">"Export"</span>) { exportRows(selected) }
+    }
+}
+data.forEach { item ->
+    <span class="type">CheckboxTableRow</span>(
+        checked = item.id <span class="kw">in</span> selected,
+        onChecked = { v -> <span class="kw">if</span> (v) selected += item.id <span class="kw">else</span> selected -= item.id }
+    ) { <span class="type">TableCell</span> { <span class="fn">text</span>(item.name) } }
+}</div>
+        </details>
+      </div>
+    </div>
+
+    <!-- StickyTable -->
+    <div class="card" id="demo-StickyTable">
+      <div class="card-header">
+        <div class="card-title">StickyTable - header sticks while body scrolls</div>
+        <span class="badge">StickyTable</span>
+      </div>
+      <div class="card-body">
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Scroll the table body below - the header stays fixed at the top.</p>
+        <div class="sticky-table-wrap">
+          <table class="demo-table" id="sticky-table"></table>
+        </div>
+        <details class="code-toggle">
+          <summary>Kotlin DSL</summary>
+          <div class="code-block"><span class="type">StickyTable</span> {
+    <span class="fn">attr</span> { <span class="fn">height</span>(<span class="num">200f</span>) }
+    <span class="type">ThemedHeaderRow</span>(theme = theme, sticky = <span class="kw">true</span>) {
+        <span class="cm">/* header stays pinned while body scrolls */</span>
+    }
+    data.forEach { item ->
+        <span class="type">ThemedTableRow</span>(theme = theme) { <span class="cm">/* ... */</span> }
+    }
+}</div>
+        </details>
+      </div>
+    </div>
+
+    <!-- FrozenColumnTable -->
+    <div class="card" id="demo-FrozenColumnTable">
+      <div class="card-header">
+        <div class="card-title">FrozenColumnTable - first column frozen while body scrolls horizontally</div>
+        <span class="badge">FrozenColumnTable</span>
+      </div>
+      <div class="card-body">
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Scroll right - the Name column stays frozen on the left.</p>
+        <div class="demo-layout">
+          <div class="demo-main">
+            <div class="frozen-wrap" id="frozen-wrap">
+              <table class="frozen-table" id="frozen-table"></table>
+            </div>
+          </div>
+          <div class="phone-frame">
+            <div class="phone-notch"><div class="phone-notch-pill"></div></div>
+            <div class="phone-screen" style="overflow:auto" id="phone-frozen"></div>
+          </div>
+        </div>
+        <details class="code-toggle">
+          <summary>Kotlin DSL</summary>
+          <div class="code-block"><span class="type">FrozenColumnTable</span>(frozenCols = <span class="num">1</span>) {
+    <span class="fn">attr</span> { <span class="fn">width</span>(MATCH_PARENT); <span class="fn">height</span>(<span class="num">300f</span>) }
+    data.forEach { item ->
+        <span class="type">TableRow</span> {
+            <span class="type">TableCell</span>(frozen = <span class="kw">true</span>) { <span class="fn">text</span>(item.name) }
+            extraColumns.forEach { col ->
+                <span class="type">TableCell</span> { <span class="fn">attr</span> { <span class="fn">width</span>(<span class="num">120f</span>) } }
+            }
+        }
+    }
+}</div>
+        </details>
+      </div>
+    </div>
+
+    <!-- SwipeableTableRow -->
+    <div class="card" id="demo-SwipeableTableRow">
+      <div class="card-header">
+        <div class="card-title">SwipeableTableRow - swipe left to reveal action buttons</div>
+        <span class="badge">SwipeableTableRow</span>
+      </div>
+      <div class="card-body">
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Click the arrow button on a row to reveal actions, click again or click an action to dismiss.</p>
+        <div id="swipe-container"></div>
+        <details class="code-toggle">
+          <summary>Kotlin DSL</summary>
+          <div class="code-block"><span class="type">SwipeableTableRow</span>(
+    trailingActions = {
+        <span class="type">SwipeAction</span>(<span class="str">"Archive"</span>, color = <span class="str">"#f59e0b"</span>) { archive(item) }
+        <span class="type">SwipeAction</span>(<span class="str">"Edit"</span>,    color = <span class="str">"#3b82f6"</span>) { edit(item) }
+        <span class="type">SwipeAction</span>(<span class="str">"Delete"</span>, color = <span class="str">"#ef4444"</span>) { delete(item) }
+    }
+) {
+    <span class="type">TableCell</span> { <span class="fn">text</span>(item.name) }
+}</div>
+        </details>
+      </div>
+    </div>
+
+    <!-- TreeTable -->
+    <div class="card" id="demo-TreeTable">
+      <div class="card-header">
+        <div class="card-title">TreeTable - hierarchical tree data with expand/collapse</div>
+        <span class="badge">TreeTable</span>
+      </div>
+      <div class="card-body">
+        <div class="card-controls">
+          <button class="ctrl-btn" onclick="treeExpandAll()">Expand All</button>
+          <button class="ctrl-btn" onclick="treeCollapseAll()">Collapse All</button>
+        </div>
+        <div class="demo-table-wrap">
+          <table class="demo-table" id="tree-table"></table>
+        </div>
+        <details class="code-toggle">
+          <summary>Kotlin DSL</summary>
+          <div class="code-block"><span class="kw">var</span> expanded <span class="kw">by</span> <span class="fn">observable</span>(<span class="fn">mutableSetOf</span>&lt;<span class="type">String</span>&gt;())
+
+<span class="kw">fun</span> <span class="fn">renderNode</span>(node: <span class="type">TreeNode</span>, depth: <span class="type">Int</span> = <span class="num">0</span>) {
+    <span class="type">TreeTableRow</span>(
+        depth = depth,
+        hasChildren = node.children.isNotEmpty(),
+        expanded = node.id <span class="kw">in</span> expanded,
+        onToggle = {
+            <span class="kw">if</span> (node.id <span class="kw">in</span> expanded) expanded -= node.id
+            <span class="kw">else</span> expanded += node.id
+        }
+    ) { <span class="type">TableCell</span> { <span class="fn">text</span>(node.name) } }
+    <span class="kw">if</span> (node.id <span class="kw">in</span> expanded)
+        node.children.forEach { <span class="fn">renderNode</span>(it, depth + <span class="num">1</span>) }
+}
+TREE.forEach { <span class="fn">renderNode</span>(it) }</div>
+        </details>
+      </div>
+    </div>
+
+    <!-- InfiniteTable -->
+    <div class="card" id="demo-InfiniteTable">
+      <div class="card-header">
+        <div class="card-title">InfiniteTable - load-more footer, infinite scroll trigger</div>
+        <span class="badge">InfiniteTable</span>
+      </div>
+      <div class="card-body">
+        <div class="infinite-wrap" id="infinite-wrap">
+          <table class="demo-table" id="infinite-table"></table>
+          <div class="load-more-footer" id="load-more" onclick="loadMore()">Load more...</div>
+        </div>
+        <div id="infinite-status" style="font-size:12px;color:var(--text-muted);margin-top:6px"></div>
+        <details class="code-toggle">
+          <summary>Kotlin DSL</summary>
+          <div class="code-block"><span class="kw">var</span> items <span class="kw">by</span> <span class="fn">observable</span>(initialItems)
+<span class="kw">var</span> loading <span class="kw">by</span> <span class="fn">observable</span>(<span class="kw">false</span>)
+
+<span class="type">InfiniteTable</span>(
+    onLoadMore = {
+        loading = <span class="kw">true</span>
+        <span class="fn">fetchNextPage</span> { newItems ->
+            items = items + newItems
+            loading = <span class="kw">false</span>
+        }
+    }
+) {
+    items.forEach { <span class="type">TableRow</span> { <span class="cm">/* ... */</span> } }
+    <span class="kw">if</span> (loading) <span class="type">LoadingFooter</span>()
+}</div>
+        </details>
+      </div>
+    </div>
+
+    <!-- EditableTableRow -->
+    <div class="card" id="demo-EditableTableRow">
+      <div class="card-header">
+        <div class="card-title">EditableTableRow - click Edit to switch to inline input fields</div>
+        <span class="badge">EditableTableRow</span>
+      </div>
+      <div class="card-body">
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Click "Edit" on any row to enter inline edit mode, then "Save" to commit changes.</p>
+        <div class="demo-table-wrap">
+          <table class="demo-table" id="editable-table"></table>
+        </div>
+        <details class="code-toggle">
+          <summary>Kotlin DSL</summary>
+          <div class="code-block"><span class="kw">var</span> editingId <span class="kw">by</span> <span class="fn">observable</span>(-<span class="num">1</span>)
+<span class="kw">var</span> draft <span class="kw">by</span> <span class="fn">observable</span>&lt;<span class="type">Person?</span>&gt;(<span class="kw">null</span>)
+
+data.forEach { item ->
+    <span class="type">EditableTableRow</span>(
+        editing = editingId == item.id,
+        onEdit   = { editingId = item.id; draft = item.copy() },
+        onSave   = { data = data.map { <span class="kw">if</span> (it.id == item.id) draft!! <span class="kw">else</span> it }; editingId = -<span class="num">1</span> },
+        onCancel = { editingId = -<span class="num">1</span> }
+    ) {
+        <span class="kw">if</span> (editingId == item.id)
+            <span class="type">EditableCell</span> { <span class="fn">value</span>(draft!!.name); <span class="fn">onChange</span> { draft = draft!!.copy(name = it) } }
+        <span class="kw">else</span>
+            <span class="type">TableCell</span> { <span class="fn">text</span>(item.name) }
+    }
+}</div>
+        </details>
+      </div>
+    </div>
+
+  </div><!-- /sec-advanced -->
+
+</div><!-- /main-inner -->
+</main>
+</div><!-- /layout -->
 
 <script>
-// ── DATA ──
+// ===================== DATA =====================
 const PEOPLE = [
-  {name:'Alice',dept:'Engineering',score:95,grade:'A'},
-  {name:'Bob',dept:'Design',score:82,grade:'B'},
-  {name:'Carol',dept:'Product',score:78,grade:'C+'},
-  {name:'Dave',dept:'Engineering',score:91,grade:'A-'},
-  {name:'Eve',dept:'Marketing',score:67,grade:'D+'},
-  {name:'Frank',dept:'Design',score:88,grade:'B+'},
-  {name:'Grace',dept:'Product',score:74,grade:'C'},
-  {name:'Henry',dept:'Engineering',score:99,grade:'A+'},
+  {id:1,name:'Alice', dept:'Engineering',score:95,grade:'A',  note:'Top performer'},
+  {id:2,name:'Bob',   dept:'Design',     score:82,grade:'B+',note:'Consistent'},
+  {id:3,name:'Carol', dept:'Product',    score:78,grade:'C+',note:'Improving'},
+  {id:4,name:'Dave',  dept:'Engineering',score:91,grade:'A-',note:'Strong'},
+  {id:5,name:'Eve',   dept:'Marketing',  score:67,grade:'D+',note:'Needs support'},
+  {id:6,name:'Frank', dept:'Design',     score:88,grade:'B+',note:'Creative'},
+  {id:7,name:'Grace', dept:'Product',    score:74,grade:'C', note:'Steady'},
+  {id:8,name:'Henry', dept:'Engineering',score:99,grade:'A+',note:'Exceptional'},
+];
+
+const TREE = [
+  { id:'eng', name:'Engineering', dept:'Tech', level:'Dept', children:[
+    { id:'eng-fe', name:'Frontend', dept:'Web', level:'Team', children:[
+      { id:'fe-1', name:'Alice', dept:'Frontend', level:'Senior', children:[] },
+      { id:'fe-2', name:'Bob',   dept:'Frontend', level:'Engineer', children:[] },
+    ]},
+    { id:'eng-be', name:'Backend', dept:'Server', level:'Team', children:[
+      { id:'be-1', name:'Carol', dept:'Backend', level:'Tech Lead', children:[] },
+    ]},
+  ]},
+  { id:'design', name:'Design', dept:'UX/UI', level:'Dept', children:[
+    { id:'d-1', name:'Frank', dept:'UI', level:'Designer', children:[] },
+  ]},
 ];
 
 const THEMES = {
-  default:{header:'#f5f5f5',headerText:'#333',row:'#fff',alt:'#fafafa',sep:'#e0e0e0',dark:false,accent:'#1677ff'},
-  ant:    {header:'#1677ff',headerText:'#fff',row:'#fff',alt:'#fafafa',sep:'#e0e0e0',dark:false,accent:'#1677ff'},
-  teal:   {header:'#009688',headerText:'#fff',row:'#fff',alt:'#f5fffe',sep:'#b2dfdb',dark:false,accent:'#009688'},
-  dark:   {header:'#1a1a2e',headerText:'#e0e0e0',row:'#16213e',alt:'#1e2a45',sep:'#2a3550',dark:true,accent:'#58a6ff'},
+  Default: { headerBg:'#f5f5f5', headerText:'#333',    rowBg:'#fff',    altBg:'#fafafa', sep:'#e0e0e0', accent:'#1677ff', summaryBg:'#f0f0f0' },
+  AntBlue: { headerBg:'#1677ff', headerText:'#fff',    rowBg:'#fff',    altBg:'#f0f7ff', sep:'#bae0ff', accent:'#1677ff', summaryBg:'#e6f4ff' },
+  Teal:    { headerBg:'#00897b', headerText:'#fff',    rowBg:'#fff',    altBg:'#e0f2f1', sep:'#b2dfdb', accent:'#00897b', summaryBg:'#e0f2f1' },
+  Dark:    { headerBg:'#1f2937', headerText:'#e5e7eb', rowBg:'#111827', altBg:'#1f2937', sep:'#374151', accent:'#3b82f6', summaryBg:'#1f2937' },
 };
 
-let currentTheme = 'default';
-let currentComp = 'table';
-
-function T(){return THEMES[currentTheme];}
-
-// ── GRADE COLOR ──
-function gradeColor(g){
-  if(g.startsWith('A'))return '#4caf50';
-  if(g.startsWith('B'))return '#2196f3';
-  if(g.startsWith('C'))return '#ff9800';
-  return '#f44336';
-}
-
-// ── THEME ──
-function setTheme(t,el){
-  currentTheme=t;
-  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('active'));
-  el.classList.add('active');
-  const sc=document.getElementById('phone-screen');
-  if(THEMES[t].dark){sc.classList.add('dark-bg');}else{sc.classList.remove('dark-bg');}
-  renderComp(currentComp);
-}
-
-// ── NAV ──
-document.querySelectorAll('.nav-item').forEach(el=>{
-  el.addEventListener('click',()=>{
-    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-    el.classList.add('active');
-    currentComp=el.dataset.comp;
-    renderComp(currentComp);
-  });
-});
-
-// ── COPY CODE ──
-function copyCode(){
-  navigator.clipboard.writeText(document.getElementById('code-pre').textContent).then(()=>{
-    const b=document.querySelector('.copy-btn');
-    b.textContent='已复制!';setTimeout(()=>b.textContent='复制',1500);
-  });
-}
-
-// ── ROW RENDERER HELPERS ──
-function thRow(cols,isHeader=false,isAlt=false,extras=''){
-  const t=T();
-  const bg=isHeader?t.header:isAlt?t.alt:t.row;
-  const tc=isHeader?t.headerText:(t.dark?'#c9d1d9':'#212121');
-  const fw=isHeader?'600':'400';
-  return `<div style="display:flex;align-items:center;min-height:44px;border-bottom:1px solid ${t.sep};background:${bg};${extras}">${cols.map(c=>`<div style="flex:${c.flex||1};padding:0 12px;font-size:13px;color:${tc};font-weight:${fw};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;${c.w?`flex:none;width:${c.w}px;`:''}">${c.v}</div>`).join('')}</div>`;
-}
-
-function gradeSpan(g){return `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;color:#fff;font-weight:600;background:${gradeColor(g)}">${g}</span>`;}
-
-// ── COMPONENT DEFINITIONS ──
-const COMPS = {
-
-table:{
-  title:'Table',
-  desc:'垂直滚动主题表格，支持4种主题、可调行高、斑马纹。',
-  state:{rows:8},
-  controls(s,refresh){
-    return `
-    <div class="ctrl-row"><label class="ctrl-label">显示行数 <span class="val-display">${s.rows}</span></label>
-    <input type="range" min="3" max="8" value="${s.rows}" oninput="this.previousElementSibling.querySelector('.val-display').textContent=this.value;compState.rows=+this.value;renderComp('table')"></div>
-    <button class="action-btn" onclick="compState.rows=Math.min(8,compState.rows+1);renderComp('table')">+ 添加行</button>
-    <button class="action-btn danger" onclick="compState.rows=Math.max(1,compState.rows-1);renderComp('table')">− 删除行</button>`;
-  },
-  render(s){
-    const t=T();
-    let h=thRow([{v:'姓名',flex:2},{v:'部门',flex:2},{v:'分数',flex:1},{v:'等级',flex:1}],true);
-    let rows='';
-    PEOPLE.slice(0,s.rows).forEach((p,i)=>{
-      rows+=thRow([{v:p.name,flex:2},{v:p.dept,flex:2},{v:p.score,flex:1},{v:gradeSpan(p.grade),flex:1}],false,i%2===1);
-    });
-    const avg=Math.round(PEOPLE.slice(0,s.rows).reduce((a,p)=>a+p.score,0)/s.rows);
-    const sum=`<div style="display:flex;align-items:center;min-height:40px;background:${t.alt};border-top:2px solid ${t.sep}">
-      <div style="flex:2;padding:0 12px;font-size:12px;color:${t.dark?'#6b8ca9':'#888'}">平均</div>
-      <div style="flex:2;padding:0 12px;font-size:12px;color:${t.dark?'#6b8ca9':'#888'}">${avg}分</div>
-      <div style="flex:1;padding:0 12px;font-size:12px;color:${t.dark?'#6b8ca9':'#888'}">avg</div>
-      <div style="flex:1"></div></div>`;
-    return `<div style="width:100%">${h}${rows}${sum}</div>`;
-  },
-  code:`Table {
-    attr {
-        height(320f)
-        theme(TableTheme.AntBlue)
-    }
-    ThemedHeaderRow(theme) {
-        TableCell { attr { flex(2f) }
-            Text { attr { text("姓名") } }
-        }
-    }
-    items.forEachIndexed { i, item ->
-        ThemedTableRow(theme, index = i) {
-            TableCell { attr { flex(2f) }
-                Text { attr { text(item.name) } }
-            }
-        }
-    }
-}`
-},
-
-sort:{
-  title:'SortableHeaderCell',
-  desc:'点击列头循环切换 ASC → DESC → NONE，带旋转动画箭头。',
-  state:{sortKey:null,sortDir:'none'},
-  controls(s){
-    return `<div style="font-size:12px;color:#7d8fa8;line-height:1.6">点击列头箭头切换排序方向。<br>当前排序：<span style="color:#58a6ff">${s.sortKey?s.sortKey+' '+s.sortDir:'无'}</span></div>`;
-  },
-  render(s){
-    const t=T();
-    const cols=['姓名','分数','等级'];
-    function sortArrow(key){
-      const isThis=s.sortKey===key;
-      const up=isThis&&s.sortDir==='asc'?t.accent:'#bbb';
-      const dn=isThis&&s.sortDir==='desc'?t.accent:'#bbb';
-      return `<span onclick="sortBy('${key}')" style="display:inline-flex;flex-direction:column;cursor:pointer;margin-left:4px;gap:0">
-        <span style="font-size:8px;line-height:1;color:${up}">▲</span>
-        <span style="font-size:8px;line-height:1;color:${dn}">▼</span>
-      </span>`;
-    }
-    const header=`<div style="display:flex;align-items:center;min-height:44px;background:${t.header};border-bottom:1px solid ${t.sep};position:sticky;top:0">
-      <div style="flex:2;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600;display:flex;align-items:center">姓名${sortArrow('name')}</div>
-      <div style="flex:1;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600;display:flex;align-items:center">分数${sortArrow('score')}</div>
-      <div style="flex:1;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600;display:flex;align-items:center">等级${sortArrow('grade')}</div>
-    </div>`;
-    let data=[...PEOPLE];
-    if(s.sortKey==='name'){data.sort((a,b)=>s.sortDir==='asc'?a.name.localeCompare(b.name):b.name.localeCompare(a.name));}
-    if(s.sortKey==='score'){data.sort((a,b)=>s.sortDir==='asc'?a.score-b.score:b.score-a.score);}
-    if(s.sortKey==='grade'){data.sort((a,b)=>s.sortDir==='asc'?a.grade.localeCompare(b.grade):b.grade.localeCompare(a.grade));}
-    let rows=data.map((p,i)=>`<div style="display:flex;align-items:center;min-height:44px;background:${i%2?t.alt:t.row};border-bottom:1px solid ${t.sep}">
-      <div style="flex:2;padding:0 12px;font-size:13px;color:${t.dark?'#c9d1d9':'#212121'}">${p.name}</div>
-      <div style="flex:1;padding:0 12px;font-size:13px;color:${t.dark?'#c9d1d9':'#212121'}">${p.score}</div>
-      <div style="flex:1;padding:0 12px">${gradeSpan(p.grade)}</div>
-    </div>`).join('');
-    return `<div style="width:100%">${header}${rows}</div>`;
-  },
-  code:`SortableHeaderCell(
-    text = "分数",
-    sortOrder = scoreSortOrder,
-    theme = theme,
-    onSortClick = {
-        scoreSortOrder = when(scoreSortOrder) {
-            SortOrder.NONE, SortOrder.DESC -> SortOrder.ASC
-            SortOrder.ASC -> SortOrder.DESC
-        }
-    }
-) { attr { flex(1f) } }`
-},
-
-pagination:{
-  title:'PaginationBar',
-  desc:'带首/末页、上下页、页码按钮的完整分页控件，支持动态总条数和页大小。',
-  state:{total:50,pageSize:5,current:1},
-  controls(s,refresh){
-    const pages=Math.ceil(s.total/s.pageSize);
-    return `
-    <div class="ctrl-row"><label class="ctrl-label">总条数 <span class="val-display">${s.total}</span></label>
-    <input type="range" min="10" max="100" step="5" value="${s.total}" oninput="compState.total=+this.value;compState.current=1;this.previousElementSibling.querySelector('.val-display').textContent=this.value;renderComp('pagination')"></div>
-    <div class="ctrl-row"><label class="ctrl-label">每页条数</label>
-    <select onchange="compState.pageSize=+this.value;compState.current=1;renderComp('pagination')">
-      <option value="3" ${s.pageSize===3?'selected':''}>3条/页</option>
-      <option value="5" ${s.pageSize===5?'selected':''}>5条/页</option>
-      <option value="10" ${s.pageSize===10?'selected':''}>10条/页</option>
-    </select></div>
-    <div style="font-size:12px;color:#7d8fa8">共 ${pages} 页 / 当前第 ${s.current} 页</div>`;
-  },
-  render(s){
-    const t=T();
-    const pages=Math.ceil(s.total/s.pageSize);
-    const cur=s.current;
-    // show at most 5 page numbers centered on current
-    let pnums=[];
-    let start=Math.max(1,cur-2),end=Math.min(pages,cur+2);
-    if(end-start<4){if(start===1)end=Math.min(pages,5);else start=Math.max(1,end-4);}
-    for(let i=start;i<=end;i++)pnums.push(i);
-
-    const items=[];
-    for(let i=0;i<s.total;i++)items.push({name:PEOPLE[i%PEOPLE.length].name,score:PEOPLE[i%PEOPLE.length].score,grade:PEOPLE[i%PEOPLE.length].grade});
-    const pageItems=items.slice((cur-1)*s.pageSize,cur*s.pageSize);
-
-    const header=`<div style="display:flex;align-items:center;min-height:44px;background:${t.header};border-bottom:1px solid ${t.sep};position:sticky;top:0">
-      <div style="flex:2;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600">姓名</div>
-      <div style="flex:1;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600">分数</div>
-      <div style="flex:1;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600">等级</div>
-    </div>`;
-    const rows=pageItems.map((p,i)=>`<div style="display:flex;align-items:center;min-height:44px;background:${i%2?t.alt:t.row};border-bottom:1px solid ${t.sep}">
-      <div style="flex:2;padding:0 12px;font-size:13px;color:${t.dark?'#c9d1d9':'#212121'}">${p.name}</div>
-      <div style="flex:1;padding:0 12px;font-size:13px;color:${t.dark?'#c9d1d9':'#212121'}">${p.score}</div>
-      <div style="flex:1;padding:0 12px">${gradeSpan(p.grade)}</div>
-    </div>`).join('');
-
-    function pbtn(v,label,disabled){
-      const isActive=v===cur;
-      const bg=isActive?t.accent:t.row;
-      const tc=isActive?'#fff':(t.dark?'#c9d1d9':'#333');
-      const bc=isActive?t.accent:(t.dark?'#2a3550':'#d9d9d9');
-      return `<button onclick="${disabled?'':`compState.current=${v};renderComp('pagination')`}" style="width:32px;height:32px;border-radius:6px;border:1px solid ${bc};background:${bg};cursor:${disabled?'default':'pointer'};font-size:13px;color:${tc};opacity:${disabled?.4:1};flex-shrink:0;transition:all .15s">${label}</button>`;
-    }
-    const pgbar=`<div style="display:flex;align-items:center;justify-content:center;gap:4px;padding:10px;background:${t.row};border-top:1px solid ${t.sep};flex-wrap:wrap">
-      ${pbtn(1,'«',cur===1)}
-      ${pbtn(cur-1,'‹',cur===1)}
-      ${pnums.map(n=>pbtn(n,n,false)).join('')}
-      ${pbtn(cur+1,'›',cur===pages)}
-      ${pbtn(pages,'»',cur===pages)}
-    </div>`;
-    const info=`<div style="text-align:center;font-size:11px;color:${t.dark?'#6b8ca9':'#999'};padding:4px">共 ${s.total} 条 / 第 ${cur}/${pages} 页</div>`;
-    return `<div style="width:100%">${header}${rows}${pgbar}${info}</div>`;
-  },
-  code:`PaginationBar(
-    currentPage = currentPage,
-    totalPages = totalPages(),
-    theme = themes[activeTheme],
-    showTotal = true,
-    totalItems = rawItems.size,
-    onPageChange = { currentPage = it },
-)`
-},
-
-search:{
-  title:'TableSearchBar',
-  desc:'实时搜索过滤表格数据，焦点时显示蓝色动画边框。',
-  state:{query:''},
-  controls(){
-    return `<div style="font-size:12px;color:#7d8fa8;line-height:1.6">在预览区搜索框中输入内容，表格行实时过滤。支持清除按钮与焦点边框动画。</div>`;
-  },
-  render(s){
-    const t=T();
-    const q=s.query.toLowerCase();
-    const filtered=q?PEOPLE.filter(p=>p.name.toLowerCase().includes(q)||p.dept.toLowerCase().includes(q)):PEOPLE;
-    const searchBg=t.dark?'#0d1117':'#f5f5f5';
-    const searchFocusBg=t.dark?'#1e2a45':'#fff';
-    const clearColor=t.dark?'#6b8ca9':'#bbb';
-    const header=`<div style="display:flex;align-items:center;min-height:44px;background:${t.header};border-bottom:1px solid ${t.sep};position:sticky;top:0">
-      <div style="flex:2;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600">姓名</div>
-      <div style="flex:2;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600">部门</div>
-      <div style="flex:1;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600">分数</div>
-    </div>`;
-    const rows=filtered.length?filtered.map((p,i)=>`<div style="display:flex;align-items:center;min-height:44px;background:${i%2?t.alt:t.row};border-bottom:1px solid ${t.sep}">
-      <div style="flex:2;padding:0 12px;font-size:13px;color:${t.dark?'#c9d1d9':'#212121'}">${p.name}</div>
-      <div style="flex:2;padding:0 12px;font-size:13px;color:${t.dark?'#c9d1d9':'#777'}">${p.dept}</div>
-      <div style="flex:1;padding:0 12px;font-size:13px;color:${t.dark?'#c9d1d9':'#212121'}">${p.score}</div>
-    </div>`).join(''):`<div style="padding:40px;text-align:center;color:${t.dark?'#6b8ca9':'#bbb'};font-size:13px">无匹配结果 "${s.query}"</div>`;
-    return `<div style="width:100%">
-      <div style="padding:8px 12px;background:${t.dark?'#1a1a2e':t.row};border-bottom:1px solid ${t.sep}">
-        <div id="search-inner" style="display:flex;align-items:center;background:${searchBg};border-radius:6px;padding:0 10px;border:1px solid ${t.sep};transition:all .2s">
-          <span style="color:#999;font-size:14px;margin-right:6px">🔍</span>
-          <input id="search-inp" value="${s.query}" placeholder="搜索姓名或部门…" oninput="compState.query=this.value;renderComp('search')"
-            onfocus="this.parentElement.style.borderColor='#1677ff';this.parentElement.style.background='${searchFocusBg}';this.parentElement.style.boxShadow='0 0 0 2px rgba(22,119,255,.15)'"
-            onfocusout="this.parentElement.style.borderColor='${t.sep}';this.parentElement.style.background='${searchBg}';this.parentElement.style.boxShadow='none'"
-            style="border:none;background:transparent;outline:none;font-size:13px;color:${t.dark?'#e0e0e0':'#333'};flex:1;height:34px">
-          ${s.query?`<span onclick="compState.query='';renderComp('search')" style="color:${clearColor};cursor:pointer;font-size:14px;padding:0 4px">✕</span>`:''}
-        </div>
-      </div>
-      ${header}${rows}
-    </div>`;
-  },
-  code:`TableSearchBar(
-    query = searchQuery,
-    theme = theme,
-    placeholder = "搜索姓名…",
-    onQueryChange = { searchQuery = it },
-    onClear = { searchQuery = "" },
-)`
-},
-
-expand:{
-  title:'ExpandableTableRow',
-  desc:'行内展开面板，带平滑下拉动画，展开时显示额外详情内容。',
-  state:{expanded:new Set()},
-  controls(s){
-    return `<button class="action-btn" onclick="compState.expanded=new Set([0,1,2,3]);renderComp('expand')">全部展开</button>
-    <button class="action-btn" onclick="compState.expanded=new Set();renderComp('expand')">全部折叠</button>`;
-  },
-  render(s){
-    const t=T();
-    const header=`<div style="display:flex;align-items:center;min-height:44px;background:${t.header};border-bottom:1px solid ${t.sep};position:sticky;top:0">
-      <div style="flex:2;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600;display:flex;align-items:center"><span style="width:18px;display:inline-block"></span>姓名</div>
-      <div style="flex:1;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600">分数</div>
-      <div style="flex:1;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600">等级</div>
-    </div>`;
-    const rows=PEOPLE.slice(0,4).map((p,i)=>{
-      const open=s.expanded.has(i);
-      const detailBg=t.dark?'#1a2840':'#f0f7ff';
-      const detailBorder=t.dark?'#2a3550':'#e8f0fe';
-      const detailColor=t.dark?'#8cb4d4':'#555';
-      return `<div style="border-bottom:1px solid ${t.sep}">
-        <div onclick="const e=compState.expanded;if(e.has(${i}))e.delete(${i});else e.add(${i});renderComp('expand')"
-          style="display:flex;align-items:center;min-height:44px;background:${i%2?t.alt:t.row};cursor:pointer">
-          <div style="flex:2;padding:0 12px;font-size:13px;color:${t.dark?'#c9d1d9':'#212121'};display:flex;align-items:center">
-            <span style="display:inline-block;width:18px;font-size:11px;color:${t.accent};margin-right:2px;transition:transform .2s;transform:rotate(${open?90:0}deg)">▸</span>${p.name}
-          </div>
-          <div style="flex:1;padding:0 12px;font-size:13px;color:${t.dark?'#c9d1d9':'#212121'}">${p.score}</div>
-          <div style="flex:1;padding:0 12px">${gradeSpan(p.grade)}</div>
-        </div>
-        <div style="overflow:hidden;transition:max-height .25s ease,opacity .2s;max-height:${open?'120px':'0'};opacity:${open?1:0}">
-          <div style="padding:10px 12px 10px 30px;background:${detailBg};font-size:12px;color:${detailColor};border-top:1px solid ${detailBorder}">
-            ${p.name} 来自${p.dept}，本次考核总分 ${p.score} 分，等级评定为 ${p.grade}。综合表现在团队排名中名列前茅。
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-    return `<div style="width:100%">${header}${rows}</div>`;
-  },
-  code:`ExpandableTableRow(
-    theme = theme,
-    index = i,
-    expanded = i in expandedRows,
-    onToggle = {
-        expandedRows = if (i in expandedRows)
-            expandedRows - i else expandedRows + i
-    },
-    expandedContent = {
-        Text { attr { text("详情内容") } }
-    }
-) { /* cells */ }`
-},
-
-checkbox:{
-  title:'CheckboxRow + BatchActionBar',
-  desc:'多行复选框选择，表头全选/反选，选中后底部出现批量操作栏（渐变+弹出动画）。',
-  state:{selected:new Set()},
-  controls(s){
-    return `<button class="action-btn" onclick="compState.selected=new Set(PEOPLE.map((_,i)=>i));renderComp('checkbox')">全选</button>
-    <button class="action-btn" onclick="compState.selected=new Set();renderComp('checkbox')">取消全选</button>
-    <div style="font-size:12px;color:#7d8fa8;margin-top:8px">已选: ${s.selected.size} / ${PEOPLE.length}</div>`;
-  },
-  render(s){
-    const t=T();
-    const allSelected=s.selected.size===PEOPLE.length&&PEOPLE.length>0;
-    const someSelected=s.selected.size>0&&!allSelected;
-    const cbState=allSelected?'checked':someSelected?'indeterminate':'';
-    function cb(state){
-      const bg=state?t.accent:'transparent';
-      const bc=state?t.accent:'#d9d9d9';
-      const content=state==='checked'?'<span style="color:#fff;font-size:10px;line-height:1">✓</span>':state==='indeterminate'?'<span style="color:#fff;font-size:12px;line-height:1">−</span>':'';
-      return `<div style="width:16px;height:16px;border-radius:3px;border:2px solid ${bc};background:${bg};display:inline-flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0">${content}</div>`;
-    }
-    const header=`<div style="display:flex;align-items:center;min-height:44px;background:${t.header};border-bottom:1px solid ${t.sep};position:sticky;top:0" onclick="if(compState.selected.size===PEOPLE.length)compState.selected=new Set();else compState.selected=new Set(PEOPLE.map((_,i)=>i));renderComp('checkbox')">
-      <div style="width:44px;display:flex;align-items:center;justify-content:center;cursor:pointer">${cb(cbState)}</div>
-      <div style="flex:2;font-size:13px;color:${t.headerText};font-weight:600">姓名</div>
-      <div style="flex:1;font-size:13px;color:${t.headerText};font-weight:600">分数</div>
-      <div style="flex:1;font-size:13px;color:${t.headerText};font-weight:600">等级</div>
-    </div>`;
-    const rows=PEOPLE.map((p,i)=>{
-      const sel=s.selected.has(i);
-      const rowBg=sel?`#e3f2fd`:i%2?t.alt:t.row;
-      return `<div onclick="const sel=compState.selected;if(sel.has(${i}))sel.delete(${i});else sel.add(${i});renderComp('checkbox')"
-        style="display:flex;align-items:center;min-height:44px;background:${rowBg};border-bottom:1px solid ${t.sep};cursor:pointer">
-        <div style="width:44px;display:flex;align-items:center;justify-content:center">${cb(sel?'checked':'')}</div>
-        <div style="flex:2;font-size:13px;color:${t.dark?'#c9d1d9':'#212121'}">${p.name}</div>
-        <div style="flex:1;font-size:13px;color:${t.dark?'#c9d1d9':'#212121'}">${p.score}</div>
-        <div style="flex:1;padding:0 4px">${gradeSpan(p.grade)}</div>
-      </div>`;
-    }).join('');
-    const batchVis=s.selected.size>0;
-    const batch=`<div style="position:sticky;bottom:0;background:linear-gradient(135deg,#1677ff,#0958d9);color:#fff;display:flex;align-items:center;padding:10px 14px;gap:10px;font-size:13px;box-shadow:0 -2px 12px rgba(22,119,255,.3);transform:translateY(${batchVis?'0':'100%'});transition:transform .25s">
-      <span style="flex:1;font-weight:600">已选 ${s.selected.size} 项</span>
-      <button onclick="event.stopPropagation();alert('批量删除')" style="padding:5px 12px;border-radius:4px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:12px;cursor:pointer">删除</button>
-      <button onclick="event.stopPropagation();alert('导出')" style="padding:5px 12px;border-radius:4px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:12px;cursor:pointer">导出</button>
-    </div>`;
-    return `<div style="width:100%;display:flex;flex-direction:column">${header}${rows}${batch}</div>`;
-  },
-  code:`TableBatchActionBar(
-    selectedCount = selectedItems.size,
-    totalCount = rawItems.size,
-    theme = theme,
-    onSelectAll = { selectedItems = rawItems.map{it.name}.toSet() },
-    onClearAll = { selectedItems = emptySet() },
-    actions = listOf("删除" to { selectedItems = emptySet() }),
-)`
-},
-
-swipe:{
-  title:'SwipeableTableRow',
-  desc:'左右滑动行揭示操作按钮，松手后 snap 吸附动画，支持左右双向操作区。',
-  state:{openRow:null,swipeX:{}},
-  controls(){
-    return `<div style="font-size:12px;color:#7d8fa8;line-height:1.7">在预览区左右拖拽行可显示操作按钮。<br>支持：<br>· 右侧操作区（删除/归档）<br>· 左侧操作区（收藏）<br>· 松手 snap 吸附动画`;
-  },
-  render(s){
-    const t=T();
-    const rows=[
-      {name:'Alice',info:'← 左划查看操作',left:[],right:[{label:'删除',icon:'🗑',bg:'#f44336',w:72},{label:'归档',icon:'📦',bg:'#2196f3',w:72}]},
-      {name:'Bob',info:'← 左右均可滑动 →',left:[{label:'收藏',icon:'⭐',bg:'#ffc107',w:72}],right:[{label:'删除',icon:'🗑',bg:'#f44336',w:72}]},
-      {name:'Carol',info:'← 标记已读',left:[],right:[{label:'已读',icon:'✓',bg:'#4caf50',w:90}]},
-    ];
-    const rowHtml=rows.map((r,i)=>{
-      const offset=s.swipeX[i]||0;
-      const rightW=r.right.reduce((a,b)=>a+b.w,0);
-      const leftW=r.left.reduce((a,b)=>a+b.w,0);
-      const rightBtns=r.right.map(a=>`<div style="width:${a.w}px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:${a.bg};cursor:pointer;font-size:12px;color:#fff;gap:3px;font-weight:600" onclick="compState.swipeX[${i}]=0;renderComp('swipe')">${a.icon}<span>${a.label}</span></div>`).join('');
-      const leftBtns=r.left.map(a=>`<div style="width:${a.w}px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:${a.bg};cursor:pointer;font-size:12px;color:#fff;gap:3px;font-weight:600" onclick="compState.swipeX[${i}]=0;renderComp('swipe')">${a.icon}<span>${a.label}</span></div>`).join('');
-      return `<div style="position:relative;overflow:hidden;border-bottom:1px solid ${t.sep}"
-        onmousedown="swipeStart(event,${i},${rightW},${leftW})"
-        ontouchstart="swipeStart(event,${i},${rightW},${leftW})">
-        <div style="position:absolute;right:0;top:0;bottom:0;display:flex">${rightBtns}</div>
-        <div style="position:absolute;left:0;top:0;bottom:0;display:flex">${leftBtns}</div>
-        <div style="display:flex;align-items:center;min-height:56px;background:${i%2?t.alt:t.row};transform:translateX(${offset}px);transition:${s.openRow===i?'none':'transform .25s cubic-bezier(.25,.46,.45,.94)'};position:relative;z-index:2;padding:0 16px;gap:12px;cursor:grab">
-          <div style="flex:1;font-size:15px;color:${t.dark?'#c9d1d9':'#212121'}">${r.name}</div>
-          <div style="font-size:12px;color:${t.dark?'#6b8ca9':'#aaa'}">${r.info}</div>
-        </div>
-      </div>`;
-    }).join('');
-    return `<div style="width:100%">${rowHtml}</div>`;
-  },
-  code:`SwipeableTableRow {
-    attr {
-        rowHeight(56f)
-        theme(theme)
-        rightActions(
-            SwipeAction("删除", Color(0xFFF44336L), icon = "🗑"),
-            SwipeAction("归档", Color(0xFF2196F3L), icon = "📦"),
-        )
-        leftActions(
-            SwipeAction("收藏", Color(0xFFFFC107L), icon = "⭐"),
-        )
-        content { /* row content */ }
-    }
-    event { onAction { side, index -> /* handle */ } }
-}`
-},
-
-tree:{
-  title:'TreeTable',
-  desc:'树形层级表格，节点可展开/折叠，无限深度嵌套，带缩进和旋转箭头动画。',
-  state:{expanded:new Set(['eng','product']),indentWidth:18},
-  controls(s){
-    return `<button class="action-btn" onclick="compState.expanded=new Set(['eng','eng-fe','eng-be','product','design']);renderComp('tree')">全部展开</button>
-    <button class="action-btn" onclick="compState.expanded=new Set();renderComp('tree')">全部折叠</button>
-    <div class="ctrl-row"><label class="ctrl-label">缩进宽度 <span class="val-display">${s.indentWidth}px</span></label>
-    <input type="range" min="8" max="32" value="${s.indentWidth}" oninput="compState.indentWidth=+this.value;this.previousElementSibling.querySelector('.val-display').textContent=this.value+'px';renderComp('tree')"></div>`;
-  },
-  render(s){
-    const t=T();
-    const tree=[
-      {id:'eng',cells:['工程部','技术','部门'],children:[
-        {id:'eng-fe',cells:['前端组','Web/移动','团队'],children:[
-          {id:'eng-fe-1',cells:['Alice','前端','Senior'],children:[]},
-          {id:'eng-fe-2',cells:['Bob','前端','Engineer'],children:[]},
-        ]},
-        {id:'eng-be',cells:['后端组','服务器','团队'],children:[
-          {id:'eng-be-1',cells:['Carol','后端','Tech Lead'],children:[]},
-          {id:'eng-be-2',cells:['Dave','后端','Senior'],children:[]},
-        ]},
-      ]},
-      {id:'product',cells:['产品部','产品','部门'],children:[
-        {id:'product-1',cells:['Frank','产品','PM'],children:[]},
-        {id:'product-2',cells:['Grace','产品','PM'],children:[]},
-      ]},
-      {id:'design',cells:['设计部','UX/UI','部门'],children:[
-        {id:'design-1',cells:['Henry','UI','Designer'],children:[]},
-      ]},
-    ];
-    const header=`<div style="display:flex;align-items:center;min-height:44px;background:${t.header};border-bottom:1px solid ${t.sep};position:sticky;top:0">
-      <div style="flex:2;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600">名称</div>
-      <div style="flex:1.5;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600">方向</div>
-      <div style="flex:1;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600;text-align:center">职级</div>
-    </div>`;
-    function renderNodes(nodes,depth){
-      return nodes.map((node,idx)=>{
-        const exp=s.expanded.has(node.id);
-        const hasChildren=node.children.length>0;
-        const rowBg=(depth===0?(idx%2?t.alt:t.row):t.row);
-        const rowHtml=`<div style="display:flex;align-items:center;min-height:44px;background:${rowBg};border-bottom:1px solid ${t.sep}${exp&&hasChildren?';border-bottom-color:'+t.sep:''}">
-          <div style="flex:2;padding:0 4px 0 ${8+depth*s.indentWidth}px;font-size:13px;color:${t.dark?'#c9d1d9':'#212121'};display:flex;align-items:center">
-            ${hasChildren?`<span onclick="const e=compState.expanded;if(e.has('${node.id}'))e.delete('${node.id}');else e.add('${node.id}');renderComp('tree')" style="display:inline-flex;align-items:center;justify-content:center;width:18px;font-size:11px;color:${t.accent};cursor:pointer;transition:transform .15s;transform:rotate(${exp?90:0}deg)">▸</span>`:
-            `<span style="display:inline-block;width:18px"></span>`}
-            ${node.cells[0]}
-          </div>
-          <div style="flex:1.5;padding:0 12px;font-size:13px;color:${t.dark?'#8cb4d4':'#777'}">${node.cells[1]}</div>
-          <div style="flex:1;padding:0 12px;font-size:13px;color:${t.dark?'#c9d1d9':'#212121'};text-align:center">${node.cells[2]}</div>
-        </div>`;
-        const childHtml=(exp&&hasChildren)?renderNodes(node.children,depth+1):'';
-        return rowHtml+childHtml;
-      }).join('');
-    }
-    return `<div style="width:100%">${header}${renderNodes(tree,0)}</div>`;
-  },
-  code:`TreeTable {
-    attr {
-        theme(themes[activeThemeIndex])
-        columns(
-            TreeTableColumn("名称", flex = 2f),
-            TreeTableColumn("方向", flex = 1.5f),
-            TreeTableColumn("职级", flex = 1f),
-        )
-        nodes(orgTree)
-        defaultExpandAll(false)
-        indentWidth(18f)
-    }
-    event {
-        onRowClick { node, depth -> /* handle */ }
-        onExpandChange { id, expanded -> }
-    }
-}`
-},
-
-infinite:{
-  title:'InfiniteTable',
-  desc:'无限滚动加载表格，滚动至底部或点击"加载更多"行触发回调，带 loading 状态。',
-  state:{items:Array.from({length:8},(_,i)=>`数据项 ${i+1}`),loading:false,hasMore:true},
-  controls(s){
-    return `<button class="action-btn primary" onclick="loadMoreItems()">手动触发加载更多</button>
-    <button class="action-btn" onclick="compState.items=Array.from({length:8},(_,i)=>'数据项 '+(i+1));compState.hasMore=true;renderComp('infinite')">重置</button>
-    <div style="font-size:12px;color:#7d8fa8;margin-top:8px">已加载: ${s.items.length} 条<br>还有更多: ${s.hasMore?'是':'否'}</div>`;
-  },
-  render(s){
-    const t=T();
-    const header=`<div style="display:flex;align-items:center;min-height:44px;background:${t.header};border-bottom:1px solid ${t.sep};position:sticky;top:0">
-      <div style="width:48px;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600">#</div>
-      <div style="flex:1;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600">数据项</div>
-    </div>`;
-    const rows=s.items.map((item,i)=>`<div style="display:flex;align-items:center;min-height:44px;background:${i%2?t.alt:t.row};border-bottom:1px solid ${t.sep}">
-      <div style="width:48px;padding:0 12px;font-size:13px;color:${t.dark?'#6b8ca9':'#999'}">${i+1}</div>
-      <div style="flex:1;padding:0 12px;font-size:13px;color:${t.dark?'#c9d1d9':'#212121'}">${item}</div>
-    </div>`).join('');
-    const footer=s.loading
-      ?`<div style="display:flex;align-items:center;justify-content:center;padding:14px;gap:8px;border-top:1px solid ${t.sep};color:${t.accent};font-size:13px"><div style="width:14px;height:14px;border:2px solid ${t.accent};border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></div>加载中…</div>`
-      :s.hasMore
-        ?`<div onclick="loadMoreItems()" style="display:flex;align-items:center;justify-content:center;padding:14px;color:${t.accent};font-size:13px;cursor:pointer;border-top:1px solid ${t.sep}">点击或上拉加载更多</div>`
-        :`<div style="display:flex;align-items:center;justify-content:center;padding:14px;color:${t.dark?'#6b8ca9':'#bbb'};font-size:13px;border-top:1px solid ${t.sep}">全部加载完毕 ✓</div>`;
-    return `<div style="width:100%">${header}${rows}${footer}</div>`;
-  },
-  code:`InfiniteTable(
-    isLoading = isLoading,
-    hasMore = hasMore,
-    onLoadMore = {
-        isLoading = true
-        setTimeout(pagerId, 1200) {
-            items = items + nextBatch
-            isLoading = false
-            if (items.size >= 20) hasMore = false
-        }
-    },
-    theme = theme,
-    height = 360f,
-) { /* header + rows */ }`
-},
-
-editable:{
-  title:'EditableTableRow',
-  desc:'行内编辑模式：点击"编辑"切换为 Input 输入框，"保存"后回到显示态，支持双向绑定。',
-  state:{rows:[['Alice','Engineering','A'],['Bob','Design','B+'],['Carol','Product','B']],editing:-1},
-  controls(s){
-    return `<button class="action-btn" onclick="compState.editing=-1;renderComp('editable')">取消所有编辑</button>
-    <div style="font-size:12px;color:#7d8fa8;margin-top:8px">点击行内"编辑"按钮进入编辑态，修改后点击"保存"确认。</div>`;
-  },
-  render(s){
-    const t=T();
-    const header=`<div style="display:flex;align-items:center;min-height:44px;background:${t.header};border-bottom:1px solid ${t.sep};position:sticky;top:0">
-      <div style="flex:2;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600">姓名</div>
-      <div style="flex:2;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600">部门</div>
-      <div style="flex:1;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600">等级</div>
-      <div style="width:80px;padding:0 8px;font-size:13px;color:${t.headerText};font-weight:600">操作</div>
-    </div>`;
-    const rows=s.rows.map((row,i)=>{
-      const isEdit=s.editing===i;
-      const rowBg=isEdit?'#fafbff':i%2?t.alt:t.row;
-      const cells=row.map((v,ci)=>{
-        if(isEdit)return `<div style="flex:${ci===2?1:2};padding:4px 8px"><input value="${v}" oninput="compState.rows[${i}][${ci}]=this.value" style="border:1px solid #1677ff;border-radius:4px;padding:3px 7px;font-size:13px;color:#212121;background:#fff;outline:none;width:100%;box-shadow:0 0 0 2px rgba(22,119,255,.12)"></div>`;
-        return `<div style="flex:${ci===2?1:2};padding:0 12px;font-size:13px;color:${t.dark?'#c9d1d9':'#212121'}">${v}</div>`;
-      }).join('');
-      const btn=isEdit
-        ?`<button onclick="compState.editing=-1;renderComp('editable')" style="padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;font-weight:600;border:none;background:#52c41a;color:#fff">保存</button>`
-        :`<button onclick="compState.editing=${i};renderComp('editable')" style="padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;font-weight:600;border:none;background:#1677ff;color:#fff">编辑</button>`;
-      return `<div style="display:flex;align-items:center;min-height:${isEdit?52:44}px;background:${rowBg};border-bottom:1px solid ${t.sep};transition:all .2s">${cells}<div style="width:80px;padding:0 8px;display:flex;align-items:center">${btn}</div></div>`;
-    }).join('');
-    return `<div style="width:100%">${header}${rows}</div>`;
-  },
-  code:`EditableTableRow(
-    fields = row.mapIndexed { colIdx, value ->
-        EditableField(
-            value = value,
-            editable = true,
-            onChange = { newVal ->
-                val updated = data.toMutableList()
-                updated[rowIdx][colIdx] = newVal
-                data = updated
-            }
-        )
-    },
-    editing = editingRowIndex == rowIdx,
-    theme = theme,
-    actionContent = {
-        // 编辑/保存按钮
-    }
-)`
-},
-
-sticky:{
-  title:'StickyTable',
-  desc:'粘性表头：正文内容可滚动，表头始终固定在顶部。',
-  state:{},
-  controls(){return '<div style="font-size:12px;color:#7d8fa8;line-height:1.6">在预览区向下滚动，表头会固定在顶部不随内容滚动。</div>';},
-  render(){
-    const t=T();
-    const header=`<div style="display:flex;align-items:center;min-height:44px;background:${t.header};border-bottom:1px solid ${t.sep};position:sticky;top:32px;z-index:5">
-      <div style="flex:2;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600">姓名</div>
-      <div style="flex:1;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600">分数</div>
-      <div style="flex:1;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600">等级</div>
-    </div>`;
-    const rows=[...PEOPLE,...PEOPLE].map((p,i)=>`<div style="display:flex;align-items:center;min-height:44px;background:${i%2?t.alt:t.row};border-bottom:1px solid ${t.sep}">
-      <div style="flex:2;padding:0 12px;font-size:13px;color:${t.dark?'#c9d1d9':'#212121'}">${p.name}</div>
-      <div style="flex:1;padding:0 12px;font-size:13px;color:${t.dark?'#c9d1d9':'#212121'}">${p.score}</div>
-      <div style="flex:1;padding:0 12px">${gradeSpan(p.grade)}</div>
-    </div>`).join('');
-    return `<div style="width:100%"><div style="background:${t.dark?'#0d1117':'#eee'};padding:8px 12px;font-size:12px;color:${t.dark?'#6b8ca9':'#888'}">↓ 向下滚动查看粘性表头效果</div>${header}${rows}</div>`;
-  },
-  code:`StickyTable(
-    height = 240f,
-    theme = theme,
-    headerContent = {
-        TableCell { /* header cells */ }
-    },
-    bodyContent = {
-        items.forEachIndexed { idx, item ->
-            ThemedTableRow(theme, index = idx) {
-                TableCell { /* cells */ }
-            }
-        }
-    }
-)`
-},
-
-frozen:{
-  title:'FrozenColumnTable',
-  desc:'首列冻结：第一列固定，其余列可横向滚动。适合宽数据表。',
-  state:{},
-  controls(){return '<div style="font-size:12px;color:#7d8fa8;line-height:1.6">在预览区横向滑动右侧列，左侧姓名列保持固定。</div>';},
-  render(){
-    const t=T();
-    const extraCols=['部门','分数','等级','备注','城市'];
-    const header=`<div style="display:flex">
-      <div style="flex:none;width:100px;background:${t.header};z-index:3;box-shadow:2px 0 6px rgba(0,0,0,.1)">
-        <div style="display:flex;align-items:center;min-height:44px;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600;border-bottom:1px solid ${t.sep}">姓名</div>
-        ${PEOPLE.map((p,i)=>`<div style="display:flex;align-items:center;min-height:44px;padding:0 12px;font-size:13px;color:${t.dark?'#c9d1d9':'#212121'};background:${i%2?t.alt:t.row};border-bottom:1px solid ${t.sep}">${p.name}</div>`).join('')}
-      </div>
-      <div style="flex:1;overflow-x:auto">
-        <div style="min-width:400px">
-          <div style="display:flex;align-items:center;min-height:44px;background:${t.header};border-bottom:1px solid ${t.sep}">
-            ${extraCols.map(c=>`<div style="flex:none;width:90px;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600;white-space:nowrap">${c}</div>`).join('')}
-          </div>
-          ${PEOPLE.map((p,i)=>`<div style="display:flex;align-items:center;min-height:44px;background:${i%2?t.alt:t.row};border-bottom:1px solid ${t.sep}">
-            <div style="flex:none;width:90px;padding:0 12px;font-size:13px;color:${t.dark?'#777':'#777'}">${p.dept}</div>
-            <div style="flex:none;width:90px;padding:0 12px;font-size:13px;color:${t.dark?'#c9d1d9':'#212121'}">${p.score}</div>
-            <div style="flex:none;width:90px;padding:0 12px">${gradeSpan(p.grade)}</div>
-            <div style="flex:none;width:90px;padding:0 12px;font-size:12px;color:${t.dark?'#6b8ca9':'#aaa'}">备注</div>
-            <div style="flex:none;width:90px;padding:0 12px;font-size:13px;color:${t.dark?'#c9d1d9':'#777'}">北京</div>
-          </div>`).join('')}
-        </div>
-      </div>
-    </div>`;
-    return `<div style="width:100%">${header}</div>`;
-  },
-  code:`FrozenColumnTable(
-    rowCount = wideItems.size,
-    rowHeight = 48f,
-    frozenWidth = 100f,
-    theme = theme,
-    frozenHeaderContent = { Text { attr { text("姓名") } } },
-    frozenRowContent = { idx -> { Text { attr { text(items[idx].name) } } } },
-    scrollHeaderContent = { /* extra column headers */ },
-    scrollRowContent = { idx -> { /* extra cells */ } },
-)`
-},
-
-htable:{
-  title:'HTable',
-  desc:'双向滚动表格：垂直+水平均可滚动，适合列数较多的宽表格。',
-  state:{},
-  controls(){return '<div style="font-size:12px;color:#7d8fa8;line-height:1.6">预览区内可同时进行纵向和横向滚动。宽度超出屏幕的表格使用此组件。</div>';},
-  render(){
-    const t=T();
-    const cols=[{h:'姓名',w:120},{h:'部门',w:150},{h:'分数',w:80},{h:'等级',w:80},{h:'城市',w:80},{h:'备注',w:180}];
-    const header=`<div style="display:flex;align-items:center;min-height:44px;background:${t.header};border-bottom:1px solid ${t.sep};position:sticky;top:0">
-      ${cols.map(c=>`<div style="flex:none;width:${c.w}px;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600;white-space:nowrap">${c.h}</div>`).join('')}
-    </div>`;
-    const rows=[...PEOPLE,...PEOPLE.slice(0,3)].map((p,i)=>`<div style="display:flex;align-items:center;min-height:44px;background:${i%2?t.alt:t.row};border-bottom:1px solid ${t.sep}">
-      <div style="flex:none;width:120px;padding:0 12px;font-size:13px;color:${t.dark?'#c9d1d9':'#212121'}">${p.name}</div>
-      <div style="flex:none;width:150px;padding:0 12px;font-size:13px;color:${t.dark?'#8cb4d4':'#777'}">${p.dept}</div>
-      <div style="flex:none;width:80px;padding:0 12px;font-size:13px;color:${t.dark?'#c9d1d9':'#212121'}">${p.score}</div>
-      <div style="flex:none;width:80px;padding:0 12px">${gradeSpan(p.grade)}</div>
-      <div style="flex:none;width:80px;padding:0 12px;font-size:13px;color:${t.dark?'#c9d1d9':'#777'}">北京</div>
-      <div style="flex:none;width:180px;padding:0 12px;font-size:12px;color:${t.dark?'#6b8ca9':'#aaa'}">本次考核成绩优秀</div>
-    </div>`).join('');
-    return `<div style="width:100%;overflow-x:auto"><div style="min-width:690px">${header}${rows}</div></div>`;
-  },
-  code:`HTable(tableWidth = 700f) {
-    attr {
-        flex(1f)
-        separatorColor(Color(0xFFE0E0E0L))
-    }
-    TableRow {
-        attr { rowHeight(44f); backgroundColor(theme.headerBackground) }
-        TableCell { attr { width(120f) }
-            Text { attr { text("姓名") } }
-        }
-        // more cells...
-    }
-    items.forEach { item ->
-        TableRow { attr { rowHeight(48f) }
-            // cells...
-        }
-    }
-}`
-},
-
-headergroup:{
-  title:'TableHeaderGroup',
-  desc:'合并列头分组：多列共享一个上层表头，类似 Excel 合并单元格效果。',
-  state:{},
-  controls(){return '<div style="font-size:12px;color:#7d8fa8;line-height:1.6">表头分两层：上层为分组名称，下层为具体列名。</div>';},
-  render(){
-    const t=T();
-    const groupHeader=`<div style="display:flex;background:${t.header};border-bottom:1px solid ${t.sep}">
-      <div style="flex:3;text-align:center;padding:6px;font-size:12px;font-weight:700;color:${t.headerText};border-right:1px solid ${t.sep}">基本信息</div>
-      <div style="flex:2;text-align:center;padding:6px;font-size:12px;font-weight:700;color:${t.headerText}">评估结果</div>
-    </div>`;
-    const subHeader=`<div style="display:flex;align-items:center;min-height:40px;background:${t.header};border-bottom:1px solid ${t.sep};position:sticky;top:32px">
-      <div style="flex:2;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600;border-right:1px solid ${t.sep}">姓名</div>
-      <div style="flex:1;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600;border-right:1px solid ${t.sep}">部门</div>
-      <div style="flex:1;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600;border-right:1px solid ${t.sep}">分数</div>
-      <div style="flex:1;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600">等级</div>
-    </div>`;
-    const rows=PEOPLE.slice(0,5).map((p,i)=>`<div style="display:flex;align-items:center;min-height:44px;background:${i%2?t.alt:t.row};border-bottom:1px solid ${t.sep}">
-      <div style="flex:2;padding:0 12px;font-size:13px;color:${t.dark?'#c9d1d9':'#212121'};border-right:1px solid ${t.sep}">${p.name}</div>
-      <div style="flex:1;padding:0 12px;font-size:13px;color:${t.dark?'#8cb4d4':'#777'};border-right:1px solid ${t.sep}">${p.dept}</div>
-      <div style="flex:1;padding:0 12px;font-size:13px;color:${t.dark?'#c9d1d9':'#212121'};border-right:1px solid ${t.sep}">${p.score}</div>
-      <div style="flex:1;padding:0 12px">${gradeSpan(p.grade)}</div>
-    </div>`).join('');
-    return `<div style="width:100%">${groupHeader}${subHeader}${rows}</div>`;
-  },
-  code:`TableHeaderGroup(theme) {
-    TableGroupCell("基本信息", theme) {
-        attr { flex(3f) }
-    }
-    TableGroupCell("评估结果", theme) {
-        attr { flex(2f) }
-    }
-}
-// Sub-headers:
-ThemedHeaderRow(theme) {
-    TableCell { attr { flex(2f) } Text { attr { text("姓名") } } }
-    TableCell { attr { flex(1f) } Text { attr { text("部门") } } }
-    TableCell { attr { flex(1f) } Text { attr { text("分数") } } }
-    TableCell { attr { flex(1f) } Text { attr { text("等级") } } }
-}`
-},
-
-summary:{
-  title:'SummaryRow',
-  desc:'汇总行：固定在表格底部，展示各列统计数据（合计、平均值等）。',
-  state:{},
-  controls(){return '<div style="font-size:12px;color:#7d8fa8;line-height:1.6">表格底部的汇总行用于显示合计、平均、最大值等统计数据。</div>';},
-  render(){
-    const t=T();
-    const avg=Math.round(PEOPLE.reduce((a,p)=>a+p.score,0)/PEOPLE.length);
-    const header=`<div style="display:flex;align-items:center;min-height:44px;background:${t.header};border-bottom:1px solid ${t.sep};position:sticky;top:0">
-      <div style="flex:2;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600">姓名</div>
-      <div style="flex:1;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600">分数</div>
-      <div style="flex:1;padding:0 12px;font-size:13px;color:${t.headerText};font-weight:600">等级</div>
-    </div>`;
-    const rows=PEOPLE.slice(0,5).map((p,i)=>`<div style="display:flex;align-items:center;min-height:44px;background:${i%2?t.alt:t.row};border-bottom:1px solid ${t.sep}">
-      <div style="flex:2;padding:0 12px;font-size:13px;color:${t.dark?'#c9d1d9':'#212121'}">${p.name}</div>
-      <div style="flex:1;padding:0 12px;font-size:13px;color:${t.dark?'#c9d1d9':'#212121'}">${p.score}</div>
-      <div style="flex:1;padding:0 12px">${gradeSpan(p.grade)}</div>
-    </div>`).join('');
-    const sum=`<div style="display:flex;align-items:center;min-height:40px;background:${t.alt};border-top:2px solid ${t.sep}">
-      <div style="flex:2;padding:0 12px;font-size:12px;color:${t.dark?'#6b8ca9':'#888'};font-weight:600">平均 / 合计</div>
-      <div style="flex:1;padding:0 12px;font-size:12px;color:${t.accent};font-weight:600">${avg}</div>
-      <div style="flex:1;padding:0 12px;font-size:12px;color:${t.dark?'#6b8ca9':'#888'}">avg</div>
-    </div>`;
-    return `<div style="width:100%">${header}${rows}${sum}</div>`;
-  },
-  code:`ThemedSummaryRow(theme = theme) {
-    TableCell {
-        attr { flex(2f); justifyContentCenter(); paddingLeft(12f) }
-        Text { attr { fontSize(13f); text("平均") } }
-    }
-    TableCell {
-        attr { flex(1f); allCenter() }
-        Text { attr { fontSize(13f); text("$avgScore") } }
-    }
-    TableCell {
-        attr { flex(1f); allCenter() }
-        Text { attr { fontSize(12f); color(Color(0xFF999999L)); text("avg") } }
-    }
-}`
-},
-
-};
-
-// ── SWIPE LOGIC ──
-let swipeStartX=0,swipeRow=-1,swipeInitOffset=0,swipeRightW=0,swipeLeftW=0,swiping=false;
-function swipeStart(e,row,rightW,leftW){
-  swipeRow=row;swipeRightW=rightW;swipeLeftW=leftW;
-  swipeStartX=e.touches?e.touches[0].clientX:e.clientX;
-  swipeInitOffset=compState.swipeX[row]||0;
-  swiping=true;
-  compState.openRow=row;
-  const move=ev=>{
-    if(!swiping)return;
-    const cx=ev.touches?ev.touches[0].clientX:ev.clientX;
-    const dx=cx-swipeStartX+swipeInitOffset;
-    const clamped=Math.max(-rightW*1.1,Math.min(leftW*1.1,dx));
-    compState.swipeX[row]=clamped;
-    const el=document.querySelector(`#demo-frame .sw-content`);
-    // update inline
-    renderComp('swipe');
-  };
-  const up=()=>{
-    swiping=false;
-    const cur=compState.swipeX[swipeRow]||0;
-    // snap
-    if(cur<-swipeRightW/2)compState.swipeX[swipeRow]=-swipeRightW;
-    else if(cur>swipeLeftW/2)compState.swipeX[swipeRow]=swipeLeftW;
-    else compState.swipeX[swipeRow]=0;
-    compState.openRow=null;
-    renderComp('swipe');
-    document.removeEventListener('mousemove',move);
-    document.removeEventListener('mouseup',up);
-    document.removeEventListener('touchmove',move);
-    document.removeEventListener('touchend',up);
-  };
-  document.addEventListener('mousemove',move,{passive:true});
-  document.addEventListener('mouseup',up);
-  document.addEventListener('touchmove',move,{passive:true});
-  document.addEventListener('touchend',up);
-}
-
-// ── SORT LOGIC ──
-function sortBy(key){
-  const s=compState;
-  if(s.sortKey===key){
-    if(s.sortDir==='none')s.sortDir='asc';
-    else if(s.sortDir==='asc')s.sortDir='desc';
-    else{s.sortKey=null;s.sortDir='none';}
-  }else{s.sortKey=key;s.sortDir='asc';}
-  renderComp('sort');
-}
-
-// ── INFINITE LOAD ──
-function loadMoreItems(){
-  if(compState.loading||!compState.hasMore)return;
-  compState.loading=true;
-  renderComp('infinite');
-  setTimeout(()=>{
-    const n=compState.items.length;
-    const next=Array.from({length:5},(_,i)=>`数据项 ${n+i+1}`);
-    compState.items=[...compState.items,...next];
-    compState.loading=false;
-    if(compState.items.length>=20)compState.hasMore=false;
-    renderComp('infinite');
-  },1200);
-}
-
-// ── RENDER ENGINE ──
-let compState={};
-function renderComp(name){
-  const def=COMPS[name];
-  if(!def)return;
-  document.getElementById('comp-title').textContent=def.title;
-  document.getElementById('comp-desc').textContent=def.desc;
-
-  // render demo
-  document.getElementById('demo-frame').innerHTML=def.render(compState);
-
-  // render controls
-  const ctrl=def.controls?def.controls(compState,()=>renderComp(name)):'';
-  document.getElementById('ctrl-dynamic').innerHTML=ctrl?`<div class="ctrl-title">参数控制</div>${ctrl}`:'';
-
-  // render code
-  function highlight(code){
-    return code
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-      .replace(/(\/\/.*)/g,'<span class="cm">$1</span>')
-      .replace(/\b(fun|val|var|if|else|when|for|return|true|false|null|data|class|object|in|out|by|override|internal|private)\b/g,'<span class="kw">$1</span>')
-      .replace(/\b(TableView|Table|HTable|StickyTable|FrozenColumnTable|TreeTable|InfiniteTable|EditableTableRow|EditableField|SwipeableTableRow|SwipeAction|CheckboxTableRow|TableBatchActionBar|ExpandableTableRow|TableHeaderGroup|TableGroupCell|ThemedTableRow|ThemedHeaderRow|ThemedSummaryRow|SortableHeaderCell|PaginationBar|TableSearchBar|TableTheme|TableCell|TableRow|SortOrder|TreeTableNode|TreeTableColumn|Text|View|Color)\b/g,'<span class="cl">$1</span>')
-      .replace(/"([^"]*?)"/g,'<span class="st">"$1"</span>')
-      .replace(/\b(\d+f|\d+L|\d+\.\d+f?|\d+)\b/g,'<span class="nb">$1</span>');
+// ===================== PAGE THEME TOGGLE =====================
+let pageTheme = 'light';
+function toggleTheme() {
+  pageTheme = pageTheme === 'light' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', pageTheme === 'dark' ? 'dark' : '');
+  const btn = document.getElementById('theme-toggle');
+  if (pageTheme === 'dark') {
+    btn.innerHTML = '<svg viewBox="0 0 20 20" style="width:16px;height:16px;fill:currentColor"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg> Dark';
+  } else {
+    btn.innerHTML = '<svg viewBox="0 0 20 20" style="width:16px;height:16px;fill:currentColor"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/></svg> Light';
   }
-  document.getElementById('code-pre').innerHTML=highlight(def.code||'');
+  renderFrozenTable();
+  renderGroupTable();
+  renderStickyTable();
 }
 
-function initComp(name){
-  const def=COMPS[name];
-  compState={...(def.state?JSON.parse(JSON.stringify(def.state,(_,v)=>v instanceof Set?[...v]:v)):{})} ;
-  // restore Sets
-  if(name==='expand'||name==='tree')compState.expanded=new Set(def.state.expanded?[...def.state.expanded]:[]);
-  if(name==='checkbox')compState.selected=new Set();
-  if(name==='infinite')compState.items=[...def.state.items];
-  if(name==='swipe'){compState.swipeX={};compState.openRow=null;}
-  renderComp(name);
-}
+// ===================== SIDEBAR =====================
+const NAV = [
+  { section:'Basic Tables', items:[
+    {id:'demo-Table',         label:'Table'},
+    {id:'demo-HTable',        label:'HTable'},
+    {id:'demo-TableRow',      label:'TableRow + TableCell'},
+  ]},
+  { section:'Theme & Sort', items:[
+    {id:'demo-TableTheme',         label:'TableTheme'},
+    {id:'demo-SortableHeaderCell', label:'SortableHeaderCell'},
+    {id:'demo-ThemedRows',         label:'ThemedHeaderRow / ThemedTableRow'},
+  ]},
+  { section:'Pagination & Search', items:[
+    {id:'demo-PaginationBar',  label:'PaginationBar'},
+    {id:'demo-TableEmptyView', label:'TableEmptyView'},
+    {id:'demo-TableSearchBar', label:'TableSearchBar'},
+  ]},
+  { section:'Advanced', items:[
+    {id:'demo-TableHeaderGroup',   label:'TableHeaderGroup'},
+    {id:'demo-ExpandableTableRow', label:'ExpandableTableRow'},
+    {id:'demo-CheckboxTableRow',   label:'CheckboxTableRow'},
+    {id:'demo-StickyTable',        label:'StickyTable'},
+    {id:'demo-FrozenColumnTable',  label:'FrozenColumnTable'},
+    {id:'demo-SwipeableTableRow',  label:'SwipeableTableRow'},
+    {id:'demo-TreeTable',          label:'TreeTable'},
+    {id:'demo-InfiniteTable',      label:'InfiniteTable'},
+    {id:'demo-EditableTableRow',   label:'EditableTableRow'},
+  ]},
+];
 
-// ── INIT ──
-initComp('table');
-document.querySelectorAll('.nav-item').forEach(el=>{
-  el.addEventListener('click',()=>{
-    currentComp=el.dataset.comp;
-    initComp(currentComp);
+function buildSidebar() {
+  const nav = document.getElementById('sidebar-nav');
+  nav.innerHTML = NAV.map(s => `
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">${s.section}</div>
+      ${s.items.map(i => `<a class="sidebar-item" data-id="${i.id}" href="#${i.id}" onclick="setActive('${i.id}')">${i.label}</a>`).join('')}
+    </div>
+  `).join('');
+}
+function setActive(id) {
+  document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+  const el = document.querySelector(`.sidebar-item[data-id="${id}"]`);
+  if (el) el.classList.add('active');
+}
+function filterSidebar(q) {
+  q = q.toLowerCase();
+  document.querySelectorAll('.sidebar-item').forEach(el => {
+    el.style.display = !q || el.textContent.toLowerCase().includes(q) ? '' : 'none';
   });
-});
+  document.querySelectorAll('.sidebar-section').forEach(sec => {
+    const vis = [...sec.querySelectorAll('.sidebar-item')].some(el => el.style.display !== 'none');
+    sec.style.display = vis ? '' : 'none';
+  });
+}
+window.addEventListener('scroll', () => {
+  const cards = document.querySelectorAll('.card[id]');
+  let cur = '';
+  cards.forEach(c => { if (c.getBoundingClientRect().top <= 100) cur = c.id; });
+  if (cur) setActive(cur);
+}, {passive:true});
+
+// ===================== HELPERS =====================
+function gradeClass(g) {
+  if (g.startsWith('A')) return 'badge green';
+  if (g.startsWith('B')) return 'badge';
+  if (g.startsWith('C')) return 'badge orange';
+  return 'badge red';
+}
+function gradeSpan(g) {
+  return `<span class="${gradeClass(g)}">${g}</span>`;
+}
+function applyThemeToTable(table, wrap, tk) {
+  const t = THEMES[tk] || THEMES.Default;
+  table.querySelectorAll('th').forEach(th => {
+    th.style.background = t.headerBg;
+    th.style.color = t.headerText;
+    th.style.borderBottomColor = t.sep;
+  });
+  table.querySelectorAll('tr.data-row').forEach((tr, i) => {
+    tr.style.background = i % 2 === 0 ? t.rowBg : t.altBg;
+  });
+  table.querySelectorAll('tr.data-row td').forEach(td => {
+    td.style.borderBottomColor = t.sep;
+    td.style.color = tk === 'Dark' ? '#e5e7eb' : '';
+  });
+  table.querySelectorAll('tr.summary-row td').forEach(td => {
+    td.style.background = t.summaryBg;
+    td.style.borderBottomColor = t.sep;
+    td.style.fontWeight = '600';
+    td.style.color = tk === 'Dark' ? '#e5e7eb' : '#555';
+  });
+  if (wrap) wrap.style.borderColor = t.sep;
+}
+function mkTh(html, extra) {
+  const th = document.createElement('th');
+  th.innerHTML = html;
+  if (extra) Object.assign(th.style, extra);
+  return th;
+}
+function mkTd(html, extra) {
+  const td = document.createElement('td');
+  td.innerHTML = html;
+  if (extra) Object.assign(td.style, extra);
+  return td;
+}
+
+// ===================== BASIC TABLE =====================
+function renderBasicTable() {
+  const t = document.getElementById('basic-table');
+  t.innerHTML = '';
+  const thead = t.createTHead();
+  const htr = thead.insertRow();
+  ['#','Name','Department','Score','Grade'].forEach(h => {
+    const th = mkTh(h);
+    th.style.cssText = 'background:#f5f5f5;color:#333;border-bottom-color:#e0e0e0';
+    htr.appendChild(th);
+  });
+  const tbody = t.createTBody();
+  PEOPLE.forEach(p => {
+    const tr = tbody.insertRow();
+    tr.className = 'data-row';
+    tr.style.cursor = 'pointer';
+    tr.addEventListener('click', () => {
+      document.getElementById('table-click-info').textContent = p.name + ' - ' + p.dept;
+    });
+    [p.id, p.name, p.dept, p.score, gradeSpan(p.grade)].forEach((v, i) => {
+      const td = mkTd(v);
+      td.style.borderBottomColor = '#e0e0e0';
+      tr.appendChild(td);
+    });
+  });
+
+  // phone
+  const ph = document.getElementById('phone-basic');
+  ph.innerHTML = '<table class="phone-table"><thead><tr><th>Name</th><th>Dept</th><th>Score</th></tr></thead><tbody>' +
+    PEOPLE.map((p,i) => `<tr style="background:${i%2?'#fafafa':'#fff'}"><td>${p.name}</td><td>${p.dept}</td><td>${p.score}</td></tr>`).join('') +
+    '</tbody></table>';
+}
+
+// ===================== HTABLE =====================
+function renderHTable() {
+  const t = document.getElementById('htable');
+  t.innerHTML = '';
+  const cols = ['ID','Name','Department','Score','Grade','Note','Q1','Q2','Q3','Q4','YTD'];
+  const thead = t.createTHead();
+  const htr = thead.insertRow();
+  cols.forEach(c => {
+    const th = mkTh(c, {background:'#1677ff', color:'#fff', borderBottomColor:'#bae0ff', minWidth:'90px'});
+    htr.appendChild(th);
+  });
+  const tbody = t.createTBody();
+  PEOPLE.forEach((p, i) => {
+    const tr = tbody.insertRow();
+    tr.className = 'data-row';
+    tr.style.background = i%2===0?'#fff':'#f0f7ff';
+    const vals = [p.id, p.name, p.dept, p.score, p.grade, p.note,
+      Math.round(p.score*.9), Math.round(p.score*.95), Math.round(p.score*1.02), Math.round(p.score*.98), p.score];
+    vals.forEach(v => {
+      const td = mkTd(v, {borderBottomColor:'#bae0ff'});
+      tr.appendChild(td);
+    });
+  });
+  // phone
+  const ph = document.getElementById('phone-htable');
+  ph.innerHTML = '<div style="overflow:auto;padding:4px"><table class="phone-table" style="width:max-content"><thead><tr>' +
+    cols.map(c=>`<th style="min-width:56px">${c}</th>`).join('') +
+    '</tr></thead><tbody>' +
+    PEOPLE.map((p,i)=>`<tr style="background:${i%2?'#f0f7ff':'#fff'}">${[p.id,p.name,p.dept,p.score,p.grade,p.note,'','','','',''].map(v=>`<td>${v}</td>`).join('')}</tr>`).join('') +
+    '</tbody></table></div>';
+}
+
+// ===================== ROW CELL =====================
+function renderRowCellTable() {
+  const t = document.getElementById('rowcell-table');
+  t.innerHTML = '';
+  const thead = t.createTHead();
+  const htr = thead.insertRow();
+  ['Name','Department','Score','Grade','Note'].forEach(h => {
+    htr.appendChild(mkTh(h, {background:'#f5f5f5',color:'#333',borderBottomColor:'#e0e0e0'}));
+  });
+  const tbody = t.createTBody();
+  PEOPLE.slice(0,5).forEach((p, i) => {
+    const tr = tbody.insertRow();
+    tr.className = 'data-row';
+    tr.style.background = i%2===0?'#fff':'#fafafa';
+    [p.name, p.dept, p.score, gradeSpan(p.grade), p.note].forEach(v => {
+      tr.appendChild(mkTd(v, {borderBottomColor:'#e0e0e0'}));
+    });
+  });
+}
+
+// ===================== THEME TABLE =====================
+function applyDemoTheme(tk) {
+  renderThemeTable(tk);
+  renderPhoneTheme(tk);
+}
+function renderThemeTable(tk) {
+  const t = THEMES[tk] || THEMES.Default;
+  const table = document.getElementById('theme-table');
+  table.innerHTML = '';
+  const thead = table.createTHead();
+  const htr = thead.insertRow();
+  ['Name','Department','Score','Grade'].forEach(h => {
+    htr.appendChild(mkTh(h, {background:t.headerBg, color:t.headerText, borderBottomColor:t.sep}));
+  });
+  const tbody = table.createTBody();
+  PEOPLE.forEach((p, i) => {
+    const tr = tbody.insertRow();
+    tr.className = 'data-row';
+    tr.style.background = i%2===0 ? t.rowBg : t.altBg;
+    [p.name, p.dept, p.score, gradeSpan(p.grade)].forEach(v => {
+      tr.appendChild(mkTd(v, {borderBottomColor:t.sep, color:tk==='Dark'?'#e5e7eb':''}));
+    });
+  });
+  document.getElementById('theme-table-wrap').style.borderColor = t.sep;
+}
+function renderPhoneTheme(tk) {
+  const t = THEMES[tk] || THEMES.Default;
+  const ph = document.getElementById('phone-theme');
+  ph.style.background = t.rowBg;
+  ph.innerHTML = '<table class="phone-table"><thead><tr>' +
+    ['Name','Dept','Score','Grade'].map(h=>
+      `<th style="background:${t.headerBg};color:${t.headerText};border-bottom:1px solid ${t.sep}">${h}</th>`
+    ).join('') + '</tr></thead><tbody>' +
+    PEOPLE.map((p,i)=>`<tr style="background:${i%2?t.altBg:t.rowBg}">` +
+      [p.name,p.dept,p.score,p.grade].map(v=>`<td style="border-bottom:1px solid ${t.sep};color:${tk==='Dark'?t.headerText:''}">${v}</td>`).join('') +
+      '</tr>').join('') + '</tbody></table>';
+}
+
+// ===================== SORT TABLE =====================
+let sortState = {col:null, dir:0};
+function renderSortTable() {
+  const tk = document.getElementById('sort-theme-sel').value;
+  const t = THEMES[tk] || THEMES.Default;
+  const table = document.getElementById('sort-table');
+  table.innerHTML = '';
+  const cols = [{key:'name',label:'Name'},{key:'dept',label:'Department'},{key:'score',label:'Score'},{key:'grade',label:'Grade'}];
+  const thead = table.createTHead();
+  const htr = thead.insertRow();
+  cols.forEach(col => {
+    const th = document.createElement('th');
+    th.className = 'sortable';
+    th.style.cssText = `background:${t.headerBg};color:${t.headerText};border-bottom-color:${t.sep};cursor:pointer`;
+    const isCur = sortState.col === col.key && sortState.dir !== 0;
+    const dirCls = isCur ? (sortState.dir === 1 ? 'asc' : 'desc') : '';
+    th.innerHTML = `${col.label} <span class="sort-icon ${dirCls}" style="opacity:${isCur?1:.35}"></span>`;
+    th.addEventListener('click', () => {
+      if (sortState.col === col.key) {
+        sortState.dir = sortState.dir === 0 ? 1 : sortState.dir === 1 ? -1 : 0;
+        if (sortState.dir === 0) sortState.col = null;
+      } else {
+        sortState.col = col.key;
+        sortState.dir = 1;
+      }
+      const status = document.getElementById('sort-status');
+      if (sortState.col) {
+        status.textContent = `Sorted by ${sortState.col} ${sortState.dir===1?'ASC':'DESC'}`;
+      } else {
+        status.textContent = 'Click a column header to sort';
+      }
+      renderSortTable();
+    });
+    htr.appendChild(th);
+  });
+  let data = [...PEOPLE];
+  if (sortState.col && sortState.dir !== 0) {
+    data.sort((a, b) => {
+      let av = a[sortState.col], bv = b[sortState.col];
+      if (typeof av === 'string') { av = av.toLowerCase(); bv = bv.toLowerCase(); }
+      return sortState.dir * (av < bv ? -1 : av > bv ? 1 : 0);
+    });
+  }
+  const tbody = table.createTBody();
+  data.forEach((p, i) => {
+    const tr = tbody.insertRow();
+    tr.className = 'data-row';
+    tr.style.background = i%2===0 ? t.rowBg : t.altBg;
+    [p.name, p.dept, p.score, gradeSpan(p.grade)].forEach(v => {
+      tr.appendChild(mkTd(v, {borderBottomColor:t.sep, color:tk==='Dark'?'#e5e7eb':''}));
+    });
+  });
+  document.getElementById('sort-table-wrap').style.borderColor = t.sep;
+}
+
+// ===================== THEMED ROWS =====================
+function renderThemedRows(tk) {
+  const t = THEMES[tk] || THEMES.Default;
+  const table = document.getElementById('themed-rows-table');
+  table.innerHTML = '';
+  const thead = table.createTHead();
+  const htr = thead.insertRow();
+  ['Name','Dept','Score','Grade'].forEach(h => {
+    htr.appendChild(mkTh(h, {background:t.headerBg, color:t.headerText, borderBottomColor:t.sep}));
+  });
+  const tbody = table.createTBody();
+  PEOPLE.forEach((p, i) => {
+    const tr = tbody.insertRow();
+    tr.className = 'data-row';
+    tr.style.background = i%2===0 ? t.rowBg : t.altBg;
+    [p.name, p.dept, p.score, gradeSpan(p.grade)].forEach(v => {
+      tr.appendChild(mkTd(v, {borderBottomColor:t.sep, color:tk==='Dark'?'#e5e7eb':''}));
+    });
+  });
+  const avg = Math.round(PEOPLE.reduce((s,p)=>s+p.score,0)/PEOPLE.length);
+  const sftr = tbody.insertRow();
+  sftr.className = 'summary-row';
+  [`Total: ${PEOPLE.length} records`,'',`Avg: ${avg}`,''].forEach(v => {
+    sftr.appendChild(mkTd(v, {background:t.summaryBg, borderBottomColor:t.sep, fontWeight:'600', color:tk==='Dark'?'#e5e7eb':'#555'}));
+  });
+  document.getElementById('themed-rows-wrap').style.borderColor = t.sep;
+}
+
+// ===================== PAGINATION =====================
+let pagedState = {page:1};
+function renderPaginatedTable() {
+  const pageSize = parseInt(document.getElementById('page-size-sel').value);
+  const total = PEOPLE.length;
+  const totalPages = Math.ceil(total / pageSize);
+  if (pagedState.page > totalPages) pagedState.page = totalPages;
+  const slice = PEOPLE.slice((pagedState.page-1)*pageSize, pagedState.page*pageSize);
+
+  const table = document.getElementById('paged-table');
+  table.innerHTML = '';
+  const thead = table.createTHead();
+  const htr = thead.insertRow();
+  ['Name','Department','Score','Grade'].forEach(h => {
+    htr.appendChild(mkTh(h, {background:'#f5f5f5',color:'#333',borderBottomColor:'#e0e0e0'}));
+  });
+  const tbody = table.createTBody();
+  slice.forEach((p, i) => {
+    const tr = tbody.insertRow();
+    tr.className = 'data-row';
+    tr.style.background = i%2===0?'#fff':'#fafafa';
+    [p.name, p.dept, p.score, gradeSpan(p.grade)].forEach(v => {
+      tr.appendChild(mkTd(v, {borderBottomColor:'#e0e0e0'}));
+    });
+  });
+
+  const pag = document.getElementById('paged-pagination');
+  pag.innerHTML = '';
+  const mkPBtn = (label, page, disabled, active) => {
+    const btn = document.createElement('button');
+    btn.className = 'page-btn' + (active?' active':'');
+    btn.disabled = disabled;
+    btn.innerHTML = label;
+    if (!disabled) btn.onclick = () => { pagedState.page = page; renderPaginatedTable(); };
+    return btn;
+  };
+  pag.appendChild(mkPBtn('&laquo;', 1, pagedState.page===1, false));
+  pag.appendChild(mkPBtn('&lsaquo;', pagedState.page-1, pagedState.page===1, false));
+  for (let i=1; i<=totalPages; i++) pag.appendChild(mkPBtn(i, i, false, i===pagedState.page));
+  pag.appendChild(mkPBtn('&rsaquo;', pagedState.page+1, pagedState.page===totalPages, false));
+  pag.appendChild(mkPBtn('&raquo;', totalPages, pagedState.page===totalPages, false));
+  const info = document.createElement('span');
+  info.className = 'page-info';
+  info.textContent = `${(pagedState.page-1)*pageSize+1}-${Math.min(pagedState.page*pageSize,total)} / ${total}`;
+  pag.appendChild(info);
+}
+
+// ===================== EMPTY STATE =====================
+let emptyHasData = false;
+function toggleEmptyDemo() {
+  emptyHasData = !emptyHasData;
+  document.getElementById('empty-status').textContent = 'Currently: ' + (emptyHasData ? 'showing data' : 'empty');
+  renderEmptyDemo();
+}
+function renderEmptyDemo() {
+  const c = document.getElementById('empty-demo-container');
+  if (!emptyHasData) {
+    c.innerHTML = `<div class="empty-state" style="border:1px solid var(--border);border-radius:6px">
+      <div class="empty-icon">&#128203;</div>
+      <div class="empty-title">No Data Available</div>
+      <div class="empty-sub">Try adjusting your search criteria or add new records.</div>
+    </div>`;
+  } else {
+    c.innerHTML = '';
+    const wrap = document.createElement('div');
+    wrap.className = 'demo-table-wrap';
+    const table = document.createElement('table');
+    table.className = 'demo-table';
+    const thead = table.createTHead();
+    const htr = thead.insertRow();
+    ['Name','Dept','Score'].forEach(h => htr.appendChild(mkTh(h, {background:'#f5f5f5',color:'#333',borderBottomColor:'#e0e0e0'})));
+    const tbody = table.createTBody();
+    PEOPLE.slice(0,3).forEach((p,i) => {
+      const tr = tbody.insertRow();
+      tr.style.background = i%2?'#fafafa':'#fff';
+      [p.name, p.dept, p.score].forEach(v => tr.appendChild(mkTd(v, {borderBottomColor:'#e0e0e0'})));
+    });
+    wrap.appendChild(table);
+    c.appendChild(wrap);
+  }
+}
+
+// ===================== SEARCH =====================
+function renderSearchTable(query) {
+  query = (query||'').trim().toLowerCase();
+  const filtered = PEOPLE.filter(p => !query || p.name.toLowerCase().includes(query) || p.dept.toLowerCase().includes(query));
+  const table = document.getElementById('search-table');
+  table.innerHTML = '';
+  if (filtered.length === 0) {
+    table.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text-muted)">No matching records</td></tr>';
+    document.getElementById('search-count').textContent = '';
+    return;
+  }
+  const thead = table.createTHead();
+  const htr = thead.insertRow();
+  ['Name','Department','Score','Grade'].forEach(h => htr.appendChild(mkTh(h, {background:'#f5f5f5',color:'#333',borderBottomColor:'#e0e0e0'})));
+  const tbody = table.createTBody();
+  filtered.forEach((p, i) => {
+    const tr = tbody.insertRow();
+    tr.className = 'data-row';
+    tr.style.background = i%2===0?'#fff':'#fafafa';
+    const nameTd = document.createElement('td');
+    nameTd.style.borderBottomColor = '#e0e0e0';
+    if (query) {
+      const re = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+      nameTd.innerHTML = p.name.replace(re, '<mark style="background:#fef08a">$1</mark>');
+    } else {
+      nameTd.textContent = p.name;
+    }
+    tr.appendChild(nameTd);
+    [p.dept, p.score, gradeSpan(p.grade)].forEach(v => tr.appendChild(mkTd(v, {borderBottomColor:'#e0e0e0'})));
+  });
+  document.getElementById('search-count').textContent = `Showing ${filtered.length} of ${PEOPLE.length} records`;
+}
+
+// ===================== GROUP TABLE =====================
+function renderGroupTable() {
+  const hbg = pageTheme==='dark'?'#1677ff':'#1677ff';
+  const sep = pageTheme==='dark'?'#374151':'#e0e0e0';
+  const rowbg = pageTheme==='dark'?'#111827':'#fff';
+  const alt = pageTheme==='dark'?'#1f2937':'#fafafa';
+  const thHdr = pageTheme==='dark'?'#1f2937':'#f5f5f5';
+  const thTxt = pageTheme==='dark'?'#e5e7eb':'#333';
+
+  const table = document.getElementById('group-table');
+  table.innerHTML = '';
+  const thead = table.createTHead();
+  const gr = thead.insertRow();
+  [{label:'Identity',span:2},{label:'Performance',span:2},{label:'Info',span:1}].forEach(g => {
+    const th = document.createElement('th');
+    th.colSpan = g.span;
+    th.textContent = g.label;
+    th.style.cssText = `background:${hbg};color:#fff;border-bottom:1px solid #bae0ff;text-align:center;font-size:11px;text-transform:uppercase;letter-spacing:.05em`;
+    gr.appendChild(th);
+  });
+  const hr = thead.insertRow();
+  ['#','Name','Score','Grade','Note'].forEach(h => {
+    hr.appendChild(mkTh(h, {background:thHdr, color:thTxt, borderBottomColor:sep}));
+  });
+  const tbody = table.createTBody();
+  PEOPLE.forEach((p, i) => {
+    const tr = tbody.insertRow();
+    tr.className = 'data-row';
+    tr.style.background = i%2===0?rowbg:alt;
+    [p.id, p.name, p.score, gradeSpan(p.grade), p.note].forEach(v => {
+      tr.appendChild(mkTd(v, {borderBottomColor:sep, color:pageTheme==='dark'?'#e5e7eb':''}));
+    });
+  });
+}
+
+// ===================== EXPANDABLE =====================
+let expandedRows = new Set();
+function renderExpandableTable() {
+  const table = document.getElementById('expandable-table');
+  table.innerHTML = '';
+  const thead = table.createTHead();
+  const htr = thead.insertRow();
+  ['','Name','Department','Score','Note'].forEach(h => {
+    htr.appendChild(mkTh(h, {background:'#f5f5f5',color:'#333',borderBottomColor:'#e0e0e0'}));
+  });
+  const tbody = table.createTBody();
+  PEOPLE.forEach((p, i) => {
+    const isOpen = expandedRows.has(p.id);
+    const tr = tbody.insertRow();
+    tr.className = 'data-row';
+    tr.style.background = i%2===0?'#fff':'#fafafa';
+
+    const td0 = document.createElement('td');
+    td0.style.borderBottomColor = '#e0e0e0';
+    td0.style.width = '36px';
+    const btn = document.createElement('button');
+    btn.className = 'expand-btn';
+    btn.innerHTML = `<span class="expand-arrow${isOpen?' open':''}">&#9658;</span>`;
+    btn.onclick = () => {
+      if (expandedRows.has(p.id)) expandedRows.delete(p.id);
+      else expandedRows.add(p.id);
+      renderExpandableTable();
+    };
+    td0.appendChild(btn);
+    tr.appendChild(td0);
+
+    [p.name, p.dept, p.score, p.note].forEach(v => tr.appendChild(mkTd(v, {borderBottomColor:'#e0e0e0'})));
+
+    if (isOpen) {
+      const etr = tbody.insertRow();
+      const etd = document.createElement('td');
+      etd.colSpan = 5;
+      etd.style.cssText = 'padding:10px 16px;font-size:12px;color:var(--text-muted);border-bottom:1px solid #e0e0e0;background:rgba(59,130,246,.04)';
+      etd.innerHTML = `<strong>${p.name}</strong> - ID: ${p.id} | Grade: ${p.grade} | Note: ${p.note}<br><em style="font-size:11px">Click the arrow again to collapse.</em>`;
+      etr.appendChild(etd);
+    }
+  });
+}
+
+// ===================== CHECKBOX =====================
+let checkedRows = new Set();
+function renderCheckboxTable() {
+  const bar = document.getElementById('batch-bar-container');
+  bar.innerHTML = checkedRows.size > 0 ? `<div class="batch-bar">
+    <span>${checkedRows.size} row(s) selected</span>
+    <button class="batch-btn" onclick="batchAct('Delete')">Delete</button>
+    <button class="batch-btn" onclick="batchAct('Export')">Export</button>
+    <button class="batch-btn" onclick="batchAct('Archive')">Archive</button>
+  </div>` : '';
+
+  const table = document.getElementById('checkbox-table');
+  table.innerHTML = '';
+  const thead = table.createTHead();
+  const htr = thead.insertRow();
+  const thCb = document.createElement('th');
+  thCb.style.cssText = 'background:#f5f5f5;color:#333;border-bottom-color:#e0e0e0;width:36px';
+  const cbAll = document.createElement('input');
+  cbAll.type = 'checkbox'; cbAll.className = 'cb';
+  cbAll.checked = checkedRows.size === PEOPLE.length;
+  cbAll.indeterminate = checkedRows.size > 0 && checkedRows.size < PEOPLE.length;
+  cbAll.onchange = () => {
+    if (cbAll.checked) PEOPLE.forEach(p => checkedRows.add(p.id)); else checkedRows.clear();
+    renderCheckboxTable();
+  };
+  thCb.appendChild(cbAll);
+  htr.appendChild(thCb);
+  ['Name','Department','Score','Grade'].forEach(h => {
+    htr.appendChild(mkTh(h, {background:'#f5f5f5',color:'#333',borderBottomColor:'#e0e0e0'}));
+  });
+
+  const tbody = table.createTBody();
+  PEOPLE.forEach((p, i) => {
+    const tr = tbody.insertRow();
+    tr.className = 'data-row';
+    const checked = checkedRows.has(p.id);
+    tr.style.background = checked ? 'rgba(59,130,246,.08)' : i%2===0?'#fff':'#fafafa';
+    const tdCb = document.createElement('td');
+    tdCb.style.borderBottomColor = '#e0e0e0';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.className = 'cb'; cb.checked = checked;
+    cb.onchange = () => {
+      if (cb.checked) checkedRows.add(p.id); else checkedRows.delete(p.id);
+      renderCheckboxTable();
+    };
+    tdCb.appendChild(cb);
+    tr.appendChild(tdCb);
+    [p.name, p.dept, p.score, gradeSpan(p.grade)].forEach(v => tr.appendChild(mkTd(v, {borderBottomColor:'#e0e0e0'})));
+  });
+}
+function batchAct(action) {
+  const names = PEOPLE.filter(p => checkedRows.has(p.id)).map(p=>p.name).join(', ');
+  alert(`${action}: ${names}`);
+}
+
+// ===================== STICKY TABLE =====================
+function renderStickyTable() {
+  const hbg = pageTheme==='dark'?'#1f2937':'#f5f5f5';
+  const htxt = pageTheme==='dark'?'#e5e7eb':'#333';
+  const sep = pageTheme==='dark'?'#374151':'#e0e0e0';
+  const rowbg = pageTheme==='dark'?'#111827':'#fff';
+  const alt = pageTheme==='dark'?'#1f2937':'#fafafa';
+
+  const table = document.getElementById('sticky-table');
+  table.innerHTML = '';
+  const thead = table.createTHead();
+  const htr = thead.insertRow();
+  ['Name','Department','Score','Grade','Note'].forEach(h => {
+    htr.appendChild(mkTh(h, {background:hbg, color:htxt, borderBottomColor:sep}));
+  });
+  const tbody = table.createTBody();
+  [...PEOPLE, ...PEOPLE].forEach((p, i) => {
+    const tr = tbody.insertRow();
+    tr.className = 'data-row';
+    tr.style.background = i%2===0?rowbg:alt;
+    [p.name, p.dept, p.score, gradeSpan(p.grade), p.note].forEach(v => {
+      tr.appendChild(mkTd(v, {borderBottomColor:sep, color:pageTheme==='dark'?'#e5e7eb':''}));
+    });
+  });
+}
+
+// ===================== FROZEN COLUMN =====================
+function renderFrozenTable() {
+  const hbg = pageTheme==='dark'?'#1f2937':'#1677ff';
+  const sep = pageTheme==='dark'?'#374151':'#bae0ff';
+  const rowbg = pageTheme==='dark'?'#111827':'#fff';
+  const alt = pageTheme==='dark'?'#1f2937':'#f0f7ff';
+  const frozenHdr = pageTheme==='dark'?'#263659':'#0958d9';
+  const frozenCell = pageTheme==='dark'?'#1a2744':'#e6f4ff';
+  const frozenCellAlt = pageTheme==='dark'?'#1f2f50':'#d6eaff';
+
+  const cols = ['Name','Q1','Q2','Q3','Q4','YTD','Rank','Dept','Note'];
+  const table = document.getElementById('frozen-table');
+  table.innerHTML = '';
+  const thead = table.createTHead();
+  const htr = thead.insertRow();
+  cols.forEach((c, ci) => {
+    const th = document.createElement('th');
+    th.textContent = c;
+    th.style.cssText = `background:${ci===0?frozenHdr:hbg};color:#fff;border-bottom-color:${sep};min-width:${ci===0?'100px':'90px'}`;
+    if (ci===0) th.style.boxShadow='2px 0 4px rgba(0,0,0,.15)';
+    htr.appendChild(th);
+  });
+  const tbody = table.createTBody();
+  PEOPLE.forEach((p, i) => {
+    const tr = tbody.insertRow();
+    [p.name,
+      Math.round(p.score*.9), Math.round(p.score*.95), Math.round(p.score*1.02), Math.round(p.score*.98),
+      p.score, i+1, p.dept, p.note
+    ].forEach((v, ci) => {
+      const td = mkTd(v);
+      td.style.borderBottomColor = sep;
+      td.style.color = pageTheme==='dark'?'#e5e7eb':'';
+      if (ci===0) {
+        td.style.background = i%2===0?frozenCell:frozenCellAlt;
+        td.style.boxShadow = '2px 0 4px rgba(0,0,0,.08)';
+        td.style.fontWeight = '600';
+      } else {
+        td.style.background = i%2===0?rowbg:alt;
+      }
+      tr.appendChild(td);
+    });
+  });
+  document.getElementById('frozen-wrap').style.borderColor = sep;
+
+  // phone
+  const ph = document.getElementById('phone-frozen');
+  ph.style.background = rowbg;
+  ph.innerHTML = '<div style="overflow:auto"><table class="phone-table" style="width:max-content"><thead><tr>' +
+    cols.slice(0,5).map((c,ci)=>
+      `<th style="background:${ci===0?frozenHdr:hbg};color:#fff;border-bottom:1px solid ${sep};min-width:56px${ci===0?';position:sticky;left:0;z-index:1':''}">${c}</th>`
+    ).join('') + '</tr></thead><tbody>' +
+    PEOPLE.map((p,i)=>`<tr>${
+      [p.name,Math.round(p.score*.9),Math.round(p.score*.95),Math.round(p.score*1.02),Math.round(p.score*.98)].map((v,ci)=>
+        `<td style="background:${ci===0?(i%2?frozenCellAlt:frozenCell):(i%2?alt:rowbg)};border-bottom:1px solid ${sep}${ci===0?';position:sticky;left:0;z-index:1;font-weight:600':''}">${v}</td>`
+      ).join('')
+    }</tr>`).join('') + '</tbody></table></div>';
+}
+
+// ===================== SWIPEABLE =====================
+function renderSwipeRows() {
+  const container = document.getElementById('swipe-container');
+  const bdr = 'var(--border)';
+  container.innerHTML = '';
+  const wrap = document.createElement('div');
+  wrap.style.cssText = `border:1px solid var(--border);border-radius:6px;overflow:hidden`;
+  const colors = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6'];
+  PEOPLE.slice(0,5).forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'swipe-wrap';
+    row.style.borderBottom = i < 4 ? '1px solid var(--border)' : 'none';
+    row.innerHTML = `
+      <div class="swipe-content" style="display:flex;align-items:center;padding:10px 14px;gap:12px;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:32px;height:32px;border-radius:50%;background:${colors[i%5]};display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0">${p.name[0]}</div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--text)">${p.name}</div>
+            <div style="font-size:11px;color:var(--text-muted)">${p.dept}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${gradeSpan(p.grade)}
+          <button onclick="openSwipe(this)" style="background:none;border:1px solid var(--border);border-radius:4px;padding:3px 8px;color:var(--text-muted);cursor:pointer;font-size:11px">&lt;</button>
+        </div>
+      </div>
+      <div class="swipe-actions">
+        <button class="swipe-action-btn" style="background:#f59e0b" onclick="swipeAct('Archive','${p.name}',this)">Archive</button>
+        <button class="swipe-action-btn" style="background:#3b82f6" onclick="swipeAct('Edit','${p.name}',this)">Edit</button>
+        <button class="swipe-action-btn" style="background:#ef4444" onclick="swipeAct('Delete','${p.name}',this)">Delete</button>
+      </div>`;
+    wrap.appendChild(row);
+  });
+  container.appendChild(wrap);
+}
+function openSwipe(btn) {
+  const row = btn.closest('.swipe-wrap');
+  const wasOpen = row.classList.contains('swiped');
+  document.querySelectorAll('.swipe-wrap.swiped').forEach(r => r.classList.remove('swiped'));
+  if (!wasOpen) row.classList.add('swiped');
+}
+function swipeAct(action, name, btn) {
+  btn.closest('.swipe-wrap').classList.remove('swiped');
+  alert(`${action}: ${name}`);
+}
+
+// ===================== TREE TABLE =====================
+let treeExpanded = new Set(['eng','design']);
+function renderTreeTable() {
+  const hbg = pageTheme==='dark'?'#1f2937':'#f5f5f5';
+  const htxt = pageTheme==='dark'?'#e5e7eb':'#333';
+  const sep = pageTheme==='dark'?'#374151':'#e0e0e0';
+  const rowbg = pageTheme==='dark'?'#111827':'#fff';
+
+  const table = document.getElementById('tree-table');
+  table.innerHTML = '';
+  const thead = table.createTHead();
+  const htr = thead.insertRow();
+  ['Name','Department','Level'].forEach(h => {
+    htr.appendChild(mkTh(h, {background:hbg, color:htxt, borderBottomColor:sep}));
+  });
+  const tbody = table.createTBody();
+  function addNode(node, depth) {
+    const tr = tbody.insertRow();
+    tr.className = 'data-row';
+    tr.style.background = rowbg;
+    const nameTd = document.createElement('td');
+    nameTd.style.cssText = `border-bottom-color:${sep};padding-left:${12+depth*18}px;color:${pageTheme==='dark'?'#e5e7eb':''}`;
+    if (node.children && node.children.length > 0) {
+      const btn = document.createElement('button');
+      btn.className = 'tree-toggle';
+      const icon = document.createElement('span');
+      icon.className = 'tree-icon' + (treeExpanded.has(node.id) ? ' open' : '');
+      icon.textContent = '▶';
+      btn.appendChild(icon);
+      btn.appendChild(document.createTextNode(' ' + node.name));
+      btn.onclick = () => {
+        if (treeExpanded.has(node.id)) treeExpanded.delete(node.id);
+        else treeExpanded.add(node.id);
+        renderTreeTable();
+      };
+      nameTd.appendChild(btn);
+    } else {
+      const span = document.createElement('span');
+      span.className = 'tree-leaf';
+      span.textContent = node.name;
+      nameTd.appendChild(span);
+    }
+    tr.appendChild(nameTd);
+    [node.dept, node.level].forEach(v => {
+      tr.appendChild(mkTd(v, {borderBottomColor:sep, color:pageTheme==='dark'?'#e5e7eb':''}));
+    });
+    if (node.children && node.children.length > 0 && treeExpanded.has(node.id)) {
+      node.children.forEach(child => addNode(child, depth+1));
+    }
+  }
+  TREE.forEach(node => addNode(node, 0));
+}
+function treeExpandAll() {
+  function collect(node) { treeExpanded.add(node.id); if (node.children) node.children.forEach(collect); }
+  TREE.forEach(collect);
+  renderTreeTable();
+}
+function treeCollapseAll() {
+  treeExpanded.clear();
+  renderTreeTable();
+}
+
+// ===================== INFINITE TABLE =====================
+let infiniteData = PEOPLE.slice(0,3);
+function renderInfiniteTable() {
+  const sep = 'var(--border)';
+  const hbg = pageTheme==='dark'?'#1f2937':'#f5f5f5';
+  const htxt = pageTheme==='dark'?'#e5e7eb':'#333';
+  const rowbg = pageTheme==='dark'?'#111827':'#fff';
+  const alt = pageTheme==='dark'?'#1f2937':'#fafafa';
+  const textc = pageTheme==='dark'?'#e5e7eb':'';
+
+  const table = document.getElementById('infinite-table');
+  table.innerHTML = '';
+  const thead = table.createTHead();
+  const htr = thead.insertRow();
+  ['Name','Department','Score','Grade'].forEach(h => {
+    htr.appendChild(mkTh(h, {background:hbg, color:htxt}));
+  });
+  const tbody = table.createTBody();
+  infiniteData.forEach((p, i) => {
+    const tr = tbody.insertRow();
+    tr.className = 'data-row';
+    tr.style.background = i%2===0?rowbg:alt;
+    [p.name, p.dept, p.score, gradeSpan(p.grade)].forEach(v => {
+      tr.appendChild(mkTd(v, {color:textc}));
+    });
+  });
+
+  const lm = document.getElementById('load-more');
+  const st = document.getElementById('infinite-status');
+  if (infiniteData.length >= PEOPLE.length) {
+    lm.style.display = 'none';
+    st.textContent = `All ${PEOPLE.length} records loaded.`;
+  } else {
+    lm.style.display = '';
+    st.textContent = `Showing ${infiniteData.length} of ${PEOPLE.length} records`;
+  }
+}
+function loadMore() {
+  const btn = document.getElementById('load-more');
+  btn.textContent = 'Loading...';
+  setTimeout(() => {
+    const next = PEOPLE.slice(infiniteData.length, infiniteData.length+3);
+    infiniteData = [...infiniteData, ...next];
+    renderInfiniteTable();
+  }, 500);
+}
+
+// ===================== EDITABLE TABLE =====================
+let editableData = JSON.parse(JSON.stringify(PEOPLE));
+let editingId = -1;
+let draftRow = null;
+function renderEditableTable() {
+  const hbg = pageTheme==='dark'?'#1f2937':'#f5f5f5';
+  const htxt = pageTheme==='dark'?'#e5e7eb':'#333';
+  const sep = pageTheme==='dark'?'#374151':'#e0e0e0';
+  const rowbg = pageTheme==='dark'?'#111827':'#fff';
+  const alt = pageTheme==='dark'?'#1f2937':'#fafafa';
+  const textc = pageTheme==='dark'?'#e5e7eb':'';
+
+  const table = document.getElementById('editable-table');
+  table.innerHTML = '';
+  const thead = table.createTHead();
+  const htr = thead.insertRow();
+  ['Name','Department','Score','Grade','Action'].forEach(h => {
+    htr.appendChild(mkTh(h, {background:hbg, color:htxt, borderBottomColor:sep}));
+  });
+  const tbody = table.createTBody();
+  editableData.forEach((p, i) => {
+    const tr = tbody.insertRow();
+    tr.className = 'data-row';
+    tr.style.background = editingId===p.id ? 'rgba(59,130,246,.06)' : i%2===0?rowbg:alt;
+    if (editingId === p.id) {
+      ['name','dept','score','grade'].forEach(field => {
+        const td = document.createElement('td');
+        td.style.borderBottomColor = sep;
+        const inp = document.createElement('input');
+        inp.className = 'editable-input';
+        inp.value = draftRow[field];
+        inp.oninput = e => { draftRow[field] = field==='score' ? Number(e.target.value) : e.target.value; };
+        td.appendChild(inp);
+        tr.appendChild(td);
+      });
+      const actTd = document.createElement('td');
+      actTd.style.borderBottomColor = sep;
+      actTd.style.whiteSpace = 'nowrap';
+      actTd.innerHTML = `<button class="edit-btn save" onclick="saveEdit(${p.id})">Save</button>
+        <button class="edit-btn" onclick="cancelEdit()" style="margin-left:4px">Cancel</button>`;
+      tr.appendChild(actTd);
+    } else {
+      [p.name, p.dept, p.score, gradeSpan(p.grade)].forEach(v => {
+        tr.appendChild(mkTd(v, {borderBottomColor:sep, color:textc}));
+      });
+      const actTd = document.createElement('td');
+      actTd.style.borderBottomColor = sep;
+      const editBtn = document.createElement('button');
+      editBtn.className = 'edit-btn';
+      editBtn.textContent = 'Edit';
+      editBtn.onclick = () => startEdit(p.id);
+      actTd.appendChild(editBtn);
+      tr.appendChild(actTd);
+    }
+  });
+}
+function startEdit(id) {
+  const row = editableData.find(p => p.id===id);
+  draftRow = {...row};
+  editingId = id;
+  renderEditableTable();
+}
+function saveEdit(id) {
+  editableData = editableData.map(p => p.id===id ? {...draftRow, id} : p);
+  editingId = -1; draftRow = null;
+  renderEditableTable();
+}
+function cancelEdit() {
+  editingId = -1; draftRow = null;
+  renderEditableTable();
+}
+
+// ===================== INIT =====================
+function initAll() {
+  buildSidebar();
+  renderBasicTable();
+  renderHTable();
+  renderRowCellTable();
+  renderThemeTable('Default');
+  renderPhoneTheme('Default');
+  renderSortTable();
+  renderThemedRows('Default');
+  renderPaginatedTable();
+  renderEmptyDemo();
+  renderSearchTable('');
+  renderGroupTable();
+  renderExpandableTable();
+  renderCheckboxTable();
+  renderStickyTable();
+  renderFrozenTable();
+  renderSwipeRows();
+  renderTreeTable();
+  renderInfiniteTable();
+  renderEditableTable();
+}
+document.addEventListener('DOMContentLoaded', initAll);
 </script>
 </body>
 </html>
